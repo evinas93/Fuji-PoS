@@ -74,12 +74,37 @@ const LoginPage: React.FC = () => {
 
         {/* Demo Credentials */}
         <div className="bg-blue-50 border border-blue-200 rounded-md p-4">
-          <h4 className="text-sm font-medium text-blue-800 mb-2">Demo Credentials:</h4>
-          <div className="text-xs text-blue-700 space-y-1">
-            <p><strong>Manager:</strong> manager@fujirestaurant.com / password123</p>
-            <p><strong>Server:</strong> server@fujirestaurant.com / password123</p>
-            <p><strong>Cashier:</strong> cashier@fujirestaurant.com / password123</p>
-            <p><strong>Kitchen:</strong> kitchen@fujirestaurant.com / password123</p>
+          <h4 className="text-sm font-medium text-blue-800 mb-3">🔑 Demo Credentials</h4>
+          <div className="text-xs text-blue-700 space-y-2">
+            <div className="grid grid-cols-1 gap-2">
+              <div className="flex justify-between items-center bg-white p-2 rounded border">
+                <span><strong>Manager:</strong></span>
+                <span className="font-mono">manager@fuji.com</span>
+                <span className="text-gray-500">/</span>
+                <span className="font-mono">manager123</span>
+              </div>
+              <div className="flex justify-between items-center bg-white p-2 rounded border">
+                <span><strong>Server:</strong></span>
+                <span className="font-mono">server@fuji.com</span>
+                <span className="text-gray-500">/</span>
+                <span className="font-mono">server123</span>
+              </div>
+              <div className="flex justify-between items-center bg-white p-2 rounded border">
+                <span><strong>Cashier:</strong></span>
+                <span className="font-mono">cashier@fuji.com</span>
+                <span className="text-gray-500">/</span>
+                <span className="font-mono">cashier123</span>
+              </div>
+              <div className="flex justify-between items-center bg-white p-2 rounded border">
+                <span><strong>Kitchen:</strong></span>
+                <span className="font-mono">kitchen@fuji.com</span>
+                <span className="text-gray-500">/</span>
+                <span className="font-mono">kitchen123</span>
+              </div>
+            </div>
+            <div className="mt-3 pt-2 border-t border-blue-200">
+              <p className="text-blue-600 font-medium">💡 Copy and paste these credentials to test the system!</p>
+            </div>
           </div>
         </div>
       </div>

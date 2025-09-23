@@ -70,8 +70,6 @@ const nextConfig = {
 
   // Experimental features
   experimental: {
-    // Enable server actions for form handling
-    serverActions: true,
     // Optimize package imports
     optimizePackageImports: ['@supabase/supabase-js', 'date-fns', 'recharts'],
   },

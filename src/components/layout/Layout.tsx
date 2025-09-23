@@ -41,13 +41,13 @@ export const Layout: React.FC<LayoutProps> = ({
 
   // Redirect to login if not authenticated
   React.useEffect(() => {
-    if (!isLoading && !isAuthenticated && !router.pathname.startsWith('/auth')) {
+    if (!isLoading && !currentUser && !router.pathname.startsWith('/auth')) {
       router.push('/auth/login');
     }
-  }, [isLoading, isAuthenticated, router]);
+  }, [isLoading, currentUser, router]);
 
   // Show loading screen while checking authentication
-  if (isLoading || (!isAuthenticated && !router.pathname.startsWith('/auth'))) {
+  if (isLoading || (!currentUser && !router.pathname.startsWith('/auth'))) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
         <div className="text-center">
