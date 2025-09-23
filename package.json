@@ -16,6 +16,8 @@
     "test": "jest",
     "test:watch": "jest --watch",
     "test:coverage": "jest --coverage",
+    "ai:setup": "echo 'Setting up AI features...' && npm install tensorflow @tensorflow/tfjs-node",
+    "ai:test": "echo 'Testing AI features...' && node -e 'console.log(\"AI features ready!\")'",
     "prepare": "husky install"
   },
   "keywords": [

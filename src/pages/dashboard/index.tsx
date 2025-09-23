@@ -2,9 +2,11 @@
 import React from 'react';
 import { Layout } from '../../components/layout/Layout';
 import { useCurrentUser } from '../../hooks/useAuth';
-import { PermissionGuard, RoleBasedContent, AdminOnly, ManagerOrAdmin } from '../../components/ui/PermissionGuard';
+import { PermissionGuard, RoleBasedContent } from '../../components/ui/PermissionGuard';
 import { withAuth } from '../../components/auth/withAuth';
 import { Button } from '../../components/ui/Button';
+import AIForecastDashboard from '../../components/ai/AIForecastDashboard';
+import MenuOptimizationAI from '../../components/ai/MenuOptimizationAI';
 
 const DashboardPage: React.FC = () => {
   const { data: currentUser, isLoading, error } = useCurrentUser();
@@ -244,6 +246,19 @@ const DashboardPage: React.FC = () => {
             </div>
           </PermissionGuard>
         </div>
+
+        {/* AI Features Section */}
+        <PermissionGuard permission="reports.view_daily">
+          <div className="space-y-6">
+            <h2 className="text-xl font-bold text-gray-900">🤖 AI-Powered Insights</h2>
+            
+            {/* AI Sales Forecast */}
+            <AIForecastDashboard />
+            
+            {/* AI Menu Optimization */}
+            <MenuOptimizationAI />
+          </div>
+        </PermissionGuard>
 
         {/* Authentication System Status */}
         <div className="bg-green-50 border border-green-200 rounded-lg p-6">
