@@ -1,188 +1,182 @@
-# Fuji Restaurant POS System
+# 🍣 Fuji Restaurant POS System
 
-A comprehensive Point of Sale (POS) system designed specifically for Fuji Restaurant to streamline operations, enhance customer service, and provide real-time business insights.
+Modern Point of Sale system with real-time analytics, kitchen integration, and mobile-optimized interface.
 
-## 🚀 Project Overview
-
-The Fuji POS System is a modern, cloud-based solution that replaces traditional paper-based ordering with a digital platform featuring:
-
-- **Digital Menu Management** - Real-time menu updates with pricing variations
-- **Touch-Optimized Ordering** - Intuitive interface for servers and cashiers
-- **Automated Payment Processing** - Integrated with Stripe for secure transactions
-- **Real-Time Analytics** - Live sales tracking and comprehensive reporting
-- **Kitchen Display System** - Seamless communication between front and back of house
-- **Role-Based Access Control** - Secure multi-user system with defined permissions
-
-## 🛠️ Technology Stack
-
-- **Frontend**: Next.js 14 with TypeScript
-- **Backend**: Node.js with Express.js
-- **Database**: Supabase (PostgreSQL)
-- **Authentication**: Supabase Auth
-- **Payment Processing**: Stripe
-- **Styling**: Tailwind CSS
-- **State Management**: Zustand
-- **Data Fetching**: TanStack Query (React Query)
-
-## 📋 Prerequisites
-
-- Node.js 18.0.0 or higher
-- npm 9.0.0 or higher
-- Supabase account
-- Stripe account (for payment processing)
-
-## 🚀 Getting Started
-
-### 1. Clone the repository
+## ⚡ Quick Start
 
 ```bash
-git clone https://github.com/fuji-restaurant/pos-system.git
-cd pos-system
-```
-
-### 2. Install dependencies
-
-```bash
+# 1. Install dependencies
 npm install
-```
 
-### 3. Environment Setup
+# 2. Copy environment template
+cp config/env.template .env.local
 
-Create a `.env.local` file in the root directory:
+# 3. Update .env.local with your credentials
+# (Supabase URL, keys, Stripe keys)
 
-```env
-# Supabase
-NEXT_PUBLIC_SUPABASE_URL=your-supabase-url
-NEXT_PUBLIC_SUPABASE_ANON_KEY=your-supabase-anon-key
-SUPABASE_SERVICE_ROLE_KEY=your-service-role-key
-
-# Stripe
-STRIPE_SECRET_KEY=your-stripe-secret-key
-NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=your-stripe-publishable-key
-
-# Application
-NEXT_PUBLIC_APP_URL=http://localhost:3000
-NODE_ENV=development
-```
-
-### 4. Database Setup
-
-Run the Supabase migrations:
-
-```bash
+# 4. Run database migrations
 npx supabase db push
-```
 
-### 5. Start Development Server
-
-```bash
+# 5. Start development servers
 npm run dev:all
 ```
 
-This will start both the Next.js frontend (http://localhost:3000) and the Express.js backend server.
+**Access:** Frontend http://localhost:3000 | Backend http://localhost:3001
 
-## 📁 Project Structure
+## 🏗️ System Architecture
+
+```mermaid
+graph TB
+    subgraph "Frontend Layer"
+        A[Next.js 14 Frontend<br/>React + TypeScript + Tailwind]
+        B[Mobile-Optimized UI<br/>Touch Interface]
+    end
+    
+    subgraph "API Layer"
+        C[Express.js Server<br/>RESTful APIs]
+        D[Authentication<br/>JWT + Supabase Auth]
+        E[Real-time WebSocket<br/>Kitchen Orders & Analytics]
+    end
+    
+    subgraph "Database Layer"
+        F[Supabase PostgreSQL<br/>13 Core Tables]
+        G[Row Level Security<br/>Role-Based Access]
+        H[Real-time Subscriptions<br/>Live Updates]
+    end
+    
+    subgraph "External Services"
+        I[Stripe Payment<br/>Processing]
+        J[Supabase Auth<br/>User Management]
+    end
+    
+    A --> C
+    B --> C
+    C --> D
+    C --> E
+    D --> F
+    E --> H
+    F --> G
+    C --> I
+    D --> J
+    
+    style A fill:#e1f5fe
+    style C fill:#f3e5f5
+    style F fill:#e8f5e8
+    style I fill:#fff3e0
+```
+
+## 🏗️ Tech Stack
+
+- **Frontend:** Next.js 14 + TypeScript + Tailwind CSS
+- **Backend:** Express.js + Supabase (PostgreSQL)
+- **Payments:** Stripe integration
+- **Real-time:** Supabase subscriptions
+
+## 🏛️ Architecture Overview
+
+### **Frontend Layer**
+- **Next.js 14** with App Router for modern React development
+- **TypeScript** for type safety and better developer experience
+- **Tailwind CSS** for responsive, mobile-first design
+- **Touch-optimized** interface for tablet/desktop POS terminals
+
+### **API Layer**
+- **Express.js** server with RESTful API endpoints
+- **JWT Authentication** with Supabase Auth integration
+- **Real-time WebSocket** connections for live updates
+- **Role-based middleware** for secure access control
+
+### **Database Layer**
+- **Supabase PostgreSQL** with 13 core business tables
+- **Row Level Security (RLS)** for data protection
+- **Real-time subscriptions** for kitchen orders and analytics
+- **Automated triggers** for calculations and audit logging
+
+### **External Integrations**
+- **Stripe** for secure payment processing
+- **Supabase Auth** for user management and authentication
+- **Real-time sync** between frontend and database
+
+## 📁 Key Directories
 
 ```
-fuji-pos-system/
-├── src/
-│   ├── components/      # React components
-│   ├── pages/          # Next.js pages
-│   ├── lib/            # Utility libraries
-│   ├── hooks/          # Custom React hooks
-│   ├── types/          # TypeScript type definitions
-│   ├── styles/         # Global styles
-│   └── utils/          # Helper functions
-├── supabase/
-│   ├── functions/      # Edge functions
-│   └── migrations/     # Database migrations
-├── public/             # Static assets
-├── tests/              # Test files
-└── docs/               # Documentation
+src/
+├── hooks/           # Custom React hooks for data fetching
+├── lib/services/    # Business logic (Auth, Menu, Orders, Analytics)
+├── server/          # Express.js API routes and middleware
+├── types/           # TypeScript definitions
+└── components/      # React components (ready for development)
+
+supabase/
+└── migrations/      # Database schema and sample data
 ```
 
-## 🧪 Testing
-
-Run the test suite:
+## 🔧 Development Commands
 
 ```bash
-npm run test
+npm run dev          # Next.js frontend only
+npm run server:dev   # Express.js backend only
+npm run dev:all      # Both frontend and backend
+npm run build        # Production build
+npm run test         # Run tests
+npm run lint         # Code linting
+npm run type-check   # TypeScript validation
 ```
 
-Run tests in watch mode:
+## 🎯 Key Features
+
+- **Menu Management** - Categories, items, modifiers, pricing variations
+- **Order Processing** - Real-time kitchen communication and status tracking
+- **Payment Processing** - Cash, credit, split payments with automatic calculations
+- **Analytics Dashboard** - Sales tracking, trends, and performance metrics
+- **Role-Based Access** - Admin, Manager, Server, Cashier, Kitchen, Viewer roles
+- **Inventory Tracking** - Basic stock management and usage monitoring
+
+## 🔐 Environment Variables
+
+Required in `.env.local`:
 
 ```bash
-npm run test:watch
+# Supabase
+NEXT_PUBLIC_SUPABASE_URL=your-project-url.supabase.co
+NEXT_PUBLIC_SUPABASE_ANON_KEY=your-anon-key
+SUPABASE_SERVICE_ROLE_KEY=your-service-role-key
+
+# Stripe
+STRIPE_SECRET_KEY=sk_test_your-stripe-secret-key
+NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=pk_test_your-stripe-publishable-key
+
+# Application
+NEXT_PUBLIC_APP_URL=http://localhost:3000
+SESSION_SECRET=your-32-character-secret-key
 ```
 
-Generate coverage report:
+## 📊 Database Schema
 
-```bash
-npm run test:coverage
-```
-
-## 📝 Available Scripts
-
-- `npm run dev` - Start Next.js development server
-- `npm run build` - Build production application
-- `npm run start` - Start production server
-- `npm run lint` - Run ESLint
-- `npm run format` - Format code with Prettier
-- `npm run type-check` - Run TypeScript type checking
-
-## 🔐 Security
-
-- All payment processing is handled through Stripe's PCI-compliant infrastructure
-- User authentication and authorization via Supabase Auth
-- Row Level Security (RLS) policies implemented in database
-- Environment variables for sensitive configuration
-- HTTPS enforced in production
-
-## 📊 Features by Role
-
-### Servers
-
-- Digital order taking
-- Table management
-- Order modifications
-- Payment processing
-
-### Managers
-
-- Real-time sales dashboard
-- Comprehensive reporting
-- User management
-- Menu administration
-
-### Kitchen Staff
-
-- Order queue display
-- Preparation tracking
-- Order completion
-
-### Cashiers
-
-- Payment processing
-- Receipt generation
-- Order lookup
+- **13 Core Tables** - Users, menu, orders, payments, analytics
+- **Real-time Updates** - Kitchen orders, table status, sales data
+- **Business Logic** - Automatic calculations, inventory tracking
+- **Security** - Row Level Security (RLS) policies
 
 ## 🚀 Deployment
 
-The application is designed to be deployed on:
+1. **Database**: Deploy migrations to Supabase
+2. **Frontend**: Deploy to Vercel/Netlify
+3. **Backend**: Use Vercel Edge Functions or Railway
 
-- **Frontend**: Vercel/Netlify
-- **Database**: Supabase (managed)
-- **Backend API**: Vercel Edge Functions / Railway
+## 🧪 Testing
 
-## 📞 Support
+- **Unit Tests**: `npm run test`
+- **Coverage**: `npm run test:coverage`
+- **Type Safety**: `npm run type-check`
 
-For technical support or questions, please contact the development team.
+## 📝 Documentation
 
-## 📄 License
-
-This project is proprietary software for Fuji Restaurant. All rights reserved.
+- **Database Schema**: `docs/database-schema.md`
+- **API Reference**: Available routes in `src/server/routes/`
+- **React Hooks**: Usage examples in `src/hooks/`
 
 ---
 
-**Version**: 1.0.0  
-**Last Updated**: September 2025
+**Status**: Foundation Complete ✅ | **Next**: Frontend Development  
+**Version**: 1.0.0 | **Updated**: September 2025

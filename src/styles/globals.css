@@ -1,0 +1,258 @@
+/* Global styles for Fuji POS System */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Base styles */
+@layer base {
+  html {
+    font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  }
+
+  body {
+    @apply antialiased;
+    @apply text-gray-900;
+    @apply bg-gray-50;
+  }
+
+  /* Remove default button styling */
+  button {
+    @apply focus:outline-none;
+  }
+
+  /* Remove spinner from number inputs */
+  input[type="number"]::-webkit-outer-spin-button,
+  input[type="number"]::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+  }
+
+  input[type="number"] {
+    -moz-appearance: textfield;
+  }
+}
+
+/* Component styles */
+@layer components {
+  /* Touch-optimized buttons for POS terminals */
+  .btn-touch {
+    @apply min-h-[44px] min-w-[44px] touch-manipulation;
+  }
+
+  /* Loading spinner */
+  .spinner {
+    @apply animate-spin rounded-full border-2 border-transparent border-t-current;
+  }
+
+  /* Card shadows */
+  .card-shadow {
+    box-shadow: 
+      0 1px 3px 0 rgba(0, 0, 0, 0.1),
+      0 1px 2px 0 rgba(0, 0, 0, 0.06);
+  }
+
+  .card-shadow-lg {
+    box-shadow:
+      0 10px 15px -3px rgba(0, 0, 0, 0.1),
+      0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  }
+
+  /* Form field focus styles */
+  .form-input {
+    @apply block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm;
+    @apply placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500;
+    @apply sm:text-sm;
+  }
+
+  .form-input-error {
+    @apply border-red-300 focus:ring-red-500 focus:border-red-500;
+  }
+
+  /* Table styles */
+  .table-container {
+    @apply overflow-hidden shadow ring-1 ring-black ring-opacity-5 rounded-lg;
+  }
+
+  /* Status badges */
+  .status-badge {
+    @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium;
+  }
+
+  .status-pending {
+    @apply bg-yellow-100 text-yellow-800;
+  }
+
+  .status-preparing {
+    @apply bg-blue-100 text-blue-800;
+  }
+
+  .status-ready {
+    @apply bg-green-100 text-green-800;
+  }
+
+  .status-completed {
+    @apply bg-gray-100 text-gray-800;
+  }
+
+  .status-cancelled {
+    @apply bg-red-100 text-red-800;
+  }
+
+  /* Role badges */
+  .role-admin {
+    @apply bg-purple-100 text-purple-800;
+  }
+
+  .role-manager {
+    @apply bg-blue-100 text-blue-800;
+  }
+
+  .role-server {
+    @apply bg-green-100 text-green-800;
+  }
+
+  .role-cashier {
+    @apply bg-yellow-100 text-yellow-800;
+  }
+
+  .role-kitchen {
+    @apply bg-orange-100 text-orange-800;
+  }
+
+  .role-viewer {
+    @apply bg-gray-100 text-gray-800;
+  }
+}
+
+/* Utility styles */
+@layer utilities {
+  /* Text truncation with tooltip support */
+  .truncate-tooltip {
+    @apply truncate;
+  }
+
+  /* Print styles */
+  @media print {
+    .no-print {
+      display: none !important;
+    }
+
+    .print-only {
+      display: block !important;
+    }
+
+    body {
+      @apply bg-white text-black;
+    }
+
+    .page-break {
+      page-break-before: always;
+    }
+  }
+
+  /* High contrast mode support */
+  @media (prefers-contrast: high) {
+    .contrast-border {
+      @apply border-2 border-black;
+    }
+
+    .contrast-text {
+      @apply text-black;
+    }
+
+    .contrast-bg {
+      @apply bg-white;
+    }
+  }
+
+  /* Reduced motion support */
+  @media (prefers-reduced-motion: reduce) {
+    .animate-spin {
+      animation: none;
+    }
+
+    .transition-all {
+      transition: none;
+    }
+  }
+
+  /* Focus styles for accessibility */
+  .focus-visible {
+    @apply focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2;
+  }
+}
+
+/* Custom scrollbar for webkit browsers */
+.custom-scrollbar::-webkit-scrollbar {
+  width: 6px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  @apply bg-gray-100;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  @apply bg-gray-400 rounded-full;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  @apply bg-gray-500;
+}
+
+/* Animation keyframes */
+@keyframes pulse-success {
+  0%, 100% {
+    @apply bg-green-500;
+  }
+  50% {
+    @apply bg-green-400;
+  }
+}
+
+@keyframes pulse-error {
+  0%, 100% {
+    @apply bg-red-500;
+  }
+  50% {
+    @apply bg-red-400;
+  }
+}
+
+/* Success and error animations */
+.animate-pulse-success {
+  animation: pulse-success 1s ease-in-out infinite;
+}
+
+.animate-pulse-error {
+  animation: pulse-error 1s ease-in-out infinite;
+}
+
+/* Touch-friendly styles for POS terminals */
+@media (pointer: coarse) {
+  .touch-friendly {
+    @apply min-h-[48px] min-w-[48px];
+  }
+
+  .touch-button {
+    @apply py-3 px-6 text-lg;
+  }
+
+  .touch-input {
+    @apply py-3 text-lg;
+  }
+}
+
+/* Dark mode support (for night shifts) */
+@media (prefers-color-scheme: dark) {
+  .dark-mode-support {
+    @apply bg-gray-900 text-gray-100;
+  }
+
+  .dark-mode-card {
+    @apply bg-gray-800 border-gray-700;
+  }
+
+  .dark-mode-input {
+    @apply bg-gray-700 border-gray-600 text-gray-100;
+  }
+}

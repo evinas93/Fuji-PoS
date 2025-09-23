@@ -121,12 +121,20 @@ CREATE POLICY inventory_manage ON inventory_items FOR ALL
 -- REAL-TIME SUBSCRIPTIONS SETUP
 -- =====================================================
 
--- Create publication for real-time updates
-CREATE PUBLICATION supabase_realtime FOR TABLE 
-    orders,
-    order_items,
-    restaurant_tables,
-    daily_sales;
+-- Create publication for real-time updates (if it doesn't exist)
+DO $$
+BEGIN
+    IF NOT EXISTS (SELECT 1 FROM pg_publication WHERE pubname = 'supabase_realtime') THEN
+        CREATE PUBLICATION supabase_realtime FOR TABLE 
+            orders,
+            order_items,
+            restaurant_tables,
+            daily_sales;
+    ELSE
+        -- Add tables to existing publication
+        ALTER PUBLICATION supabase_realtime ADD TABLE orders, order_items, restaurant_tables, daily_sales;
+    END IF;
+END $$;
 
 -- =====================================================
 -- SEED DATA FOR INITIAL SETUP
@@ -148,30 +156,69 @@ INSERT INTO menu_categories (name, category_type, display_order, color) VALUES
     ('Early Bird', 'early_bird', 12, '#ff69b4'),
     ('Dinner', 'dinner', 13, '#8b4513'),
     ('Side Orders', 'side_orders', 14, '#9370db'),
-    ('Children Menu', 'children_menu', 15, '#00ced1');
+    ('Children Menu', 'children_menu', 15, '#00ced1')
+ON CONFLICT (name) DO NOTHING;
 
--- Insert common modifiers
-INSERT INTO modifiers (name, price, modifier_group) VALUES
-    ('Spicy Sauce', 1.50, 'sauces'),
-    ('Teriyaki Sauce', 1.50, 'sauces'),
-    ('Ginger (Fresh)', 1.50, 'sauces'),
-    ('Extra Spicy', 0, 'spice_level'),
-    ('Mild', 0, 'spice_level'),
-    ('No Spice', 0, 'spice_level'),
-    ('Rare', 0, 'cooking_temp'),
-    ('Medium Rare', 0, 'cooking_temp'),
-    ('Medium', 0, 'cooking_temp'),
-    ('Medium Well', 0, 'cooking_temp'),
-    ('Well Done', 0, 'cooking_temp'),
-    ('Chicken Fried Rice', 5.50, 'rice_upgrade'),
-    ('Split Plate', 8.00, 'service');
+-- Insert common modifiers (only if they don't exist)
+INSERT INTO modifiers (name, price, modifier_group)
+SELECT 'Spicy Sauce', 1.50, 'sauces'
+WHERE NOT EXISTS (SELECT 1 FROM modifiers WHERE name = 'Spicy Sauce' AND modifier_group = 'sauces');
+
+INSERT INTO modifiers (name, price, modifier_group)
+SELECT 'Teriyaki Sauce', 1.50, 'sauces'
+WHERE NOT EXISTS (SELECT 1 FROM modifiers WHERE name = 'Teriyaki Sauce' AND modifier_group = 'sauces');
+
+INSERT INTO modifiers (name, price, modifier_group)
+SELECT 'Ginger (Fresh)', 1.50, 'sauces'
+WHERE NOT EXISTS (SELECT 1 FROM modifiers WHERE name = 'Ginger (Fresh)' AND modifier_group = 'sauces');
+
+INSERT INTO modifiers (name, price, modifier_group)
+SELECT 'Extra Spicy', 0, 'spice_level'
+WHERE NOT EXISTS (SELECT 1 FROM modifiers WHERE name = 'Extra Spicy' AND modifier_group = 'spice_level');
+
+INSERT INTO modifiers (name, price, modifier_group)
+SELECT 'Mild', 0, 'spice_level'
+WHERE NOT EXISTS (SELECT 1 FROM modifiers WHERE name = 'Mild' AND modifier_group = 'spice_level');
+
+INSERT INTO modifiers (name, price, modifier_group)
+SELECT 'No Spice', 0, 'spice_level'
+WHERE NOT EXISTS (SELECT 1 FROM modifiers WHERE name = 'No Spice' AND modifier_group = 'spice_level');
+
+INSERT INTO modifiers (name, price, modifier_group)
+SELECT 'Rare', 0, 'cooking_temp'
+WHERE NOT EXISTS (SELECT 1 FROM modifiers WHERE name = 'Rare' AND modifier_group = 'cooking_temp');
+
+INSERT INTO modifiers (name, price, modifier_group)
+SELECT 'Medium Rare', 0, 'cooking_temp'
+WHERE NOT EXISTS (SELECT 1 FROM modifiers WHERE name = 'Medium Rare' AND modifier_group = 'cooking_temp');
+
+INSERT INTO modifiers (name, price, modifier_group)
+SELECT 'Medium', 0, 'cooking_temp'
+WHERE NOT EXISTS (SELECT 1 FROM modifiers WHERE name = 'Medium' AND modifier_group = 'cooking_temp');
+
+INSERT INTO modifiers (name, price, modifier_group)
+SELECT 'Medium Well', 0, 'cooking_temp'
+WHERE NOT EXISTS (SELECT 1 FROM modifiers WHERE name = 'Medium Well' AND modifier_group = 'cooking_temp');
+
+INSERT INTO modifiers (name, price, modifier_group)
+SELECT 'Well Done', 0, 'cooking_temp'
+WHERE NOT EXISTS (SELECT 1 FROM modifiers WHERE name = 'Well Done' AND modifier_group = 'cooking_temp');
+
+INSERT INTO modifiers (name, price, modifier_group)
+SELECT 'Chicken Fried Rice', 5.50, 'rice_upgrade'
+WHERE NOT EXISTS (SELECT 1 FROM modifiers WHERE name = 'Chicken Fried Rice' AND modifier_group = 'rice_upgrade');
+
+INSERT INTO modifiers (name, price, modifier_group)
+SELECT 'Split Plate', 8.00, 'service'
+WHERE NOT EXISTS (SELECT 1 FROM modifiers WHERE name = 'Split Plate' AND modifier_group = 'service');
 
 -- Insert restaurant tables
 INSERT INTO restaurant_tables (table_number, section, seats) VALUES
     (1, 'Main', 4), (2, 'Main', 4), (3, 'Main', 6),
     (4, 'Main', 2), (5, 'Main', 4), (6, 'Main', 8),
     (7, 'Patio', 4), (8, 'Patio', 4), (9, 'Patio', 6),
-    (10, 'Bar', 2), (11, 'Bar', 2), (12, 'Bar', 4);
+    (10, 'Bar', 2), (11, 'Bar', 2), (12, 'Bar', 4)
+ON CONFLICT (table_number) DO NOTHING;
 
 -- Insert sample menu items with new schema structure
 
@@ -501,7 +548,8 @@ SELECT mi.id, m.id, false, false
 FROM menu_items mi
 CROSS JOIN modifiers m
 WHERE mi.category_id IN (SELECT id FROM menu_categories WHERE category_type = 'sushi_rolls')
-AND m.modifier_group = 'sauces';
+AND m.modifier_group = 'sauces'
+ON CONFLICT (item_id, modifier_id) DO NOTHING;
 
 -- Tempura gets cooking temp and sauce modifiers
 INSERT INTO item_modifiers (item_id, modifier_id, is_required, is_default)
@@ -509,7 +557,8 @@ SELECT mi.id, m.id, false, false
 FROM menu_items mi
 CROSS JOIN modifiers m
 WHERE mi.name LIKE '%Tempura%'
-AND m.modifier_group IN ('cooking_temp', 'sauces');
+AND m.modifier_group IN ('cooking_temp', 'sauces')
+ON CONFLICT (item_id, modifier_id) DO NOTHING;
 
 -- Dinner items get cooking temp and rice upgrade options
 INSERT INTO item_modifiers (item_id, modifier_id, is_required, is_default)
@@ -517,7 +566,8 @@ SELECT mi.id, m.id, false, false
 FROM menu_items mi
 CROSS JOIN modifiers m
 WHERE mi.category_id IN (SELECT id FROM menu_categories WHERE category_type IN ('dinner', 'lunch_specials'))
-AND m.modifier_group IN ('cooking_temp', 'rice_upgrade');
+AND m.modifier_group IN ('cooking_temp', 'rice_upgrade')
+ON CONFLICT (item_id, modifier_id) DO NOTHING;
 
 -- Insert sample inventory items
 INSERT INTO inventory_items (name, unit, current_quantity, reorder_point) VALUES
