@@ -10,9 +10,19 @@ export function useCurrentUser() {
   return useQuery({
     queryKey: ['currentUser'],
     queryFn: async () => {
-      const { data, error } = await authService.getCurrentUser();
-      if (error) throw error;
-      return data;
+      console.log('🔍 useCurrentUser: Fetching current user...');
+      try {
+        const { data, error } = await authService.getCurrentUser();
+        if (error) {
+          console.log('❌ useCurrentUser: Error:', error.message);
+          throw error;
+        }
+        console.log('✅ useCurrentUser: Success:', data);
+        return data;
+      } catch (error) {
+        console.log('❌ useCurrentUser: Caught error:', error);
+        throw error;
+      }
     },
     staleTime: 5 * 60 * 1000, // 5 minutes
     retry: false, // Don't retry auth failures
@@ -130,16 +140,16 @@ export function useUpdateProfile() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async ({ 
-      userId, 
-      updates 
-    }: { 
-      userId: string; 
+    mutationFn: async ({
+      userId,
+      updates,
+    }: {
+      userId: string;
       updates: Partial<{
         full_name: string;
         pin_code: string;
         hourly_rate: number;
-      }>
+      }>;
     }) => {
       const { data, error } = await authService.updateProfile(userId, updates);
       if (error) throw error;
@@ -203,15 +213,17 @@ export function usePermissions() {
     isCashier: currentUser?.profile?.role === 'cashier',
     isKitchen: currentUser?.profile?.role === 'kitchen',
     isViewer: currentUser?.profile?.role === 'viewer',
-    
+
     canManageMenu: ['admin', 'manager'].includes(currentUser?.profile?.role || ''),
     canManageUsers: ['admin', 'manager'].includes(currentUser?.profile?.role || ''),
     canProcessPayments: ['admin', 'manager', 'cashier'].includes(currentUser?.profile?.role || ''),
-    canTakeOrders: ['admin', 'manager', 'server', 'cashier'].includes(currentUser?.profile?.role || ''),
+    canTakeOrders: ['admin', 'manager', 'server', 'cashier'].includes(
+      currentUser?.profile?.role || ''
+    ),
     canViewKitchen: ['admin', 'manager', 'kitchen'].includes(currentUser?.profile?.role || ''),
     canViewReports: ['admin', 'manager', 'viewer'].includes(currentUser?.profile?.role || ''),
     canVoidOrders: ['admin', 'manager'].includes(currentUser?.profile?.role || ''),
-    
+
     userId: currentUser?.profile?.id,
     userRole: currentUser?.profile?.role,
     fullName: currentUser?.profile?.full_name,
@@ -221,7 +233,7 @@ export function usePermissions() {
 // Hook for role-based component rendering
 export function useRoleGuard(allowedRoles: UserRole[]) {
   const { userRole } = usePermissions();
-  
+
   return {
     hasAccess: userRole ? allowedRoles.includes(userRole) : false,
     userRole,
@@ -231,11 +243,24 @@ export function useRoleGuard(allowedRoles: UserRole[]) {
 // Hook to check if user is authenticated
 export function useIsAuthenticated() {
   const { data: currentUser, isLoading, error } = useCurrentUser();
-  
+
   return {
     isAuthenticated: !!currentUser && !error,
     isLoading,
     user: currentUser?.profile,
     session: currentUser?.user,
+  };
+}
+
+// General useAuth hook for backward compatibility
+export function useAuth() {
+  const { data: currentUser, isLoading, error } = useCurrentUser();
+
+  return {
+    user: currentUser?.profile,
+    session: currentUser?.user,
+    isLoading,
+    error,
+    isAuthenticated: !!currentUser && !error,
   };
 }

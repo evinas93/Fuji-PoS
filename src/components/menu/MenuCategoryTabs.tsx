@@ -13,7 +13,7 @@ export const MenuCategoryTabs: React.FC<MenuCategoryTabsProps> = ({
   categories,
   activeCategory,
   onCategoryChange,
-  showAllOption = true
+  showAllOption = true,
 }) => {
   const getCategoryIcon = (categoryType: ItemCategory) => {
     const icons: Record<ItemCategory, string> = {
@@ -31,14 +31,14 @@ export const MenuCategoryTabs: React.FC<MenuCategoryTabsProps> = ({
       early_bird: '🌅',
       dinner: '🍽️',
       side_orders: '🥗',
-      children_menu: '👶'
+      children_menu: '👶',
     };
     return icons[categoryType] || '🍽️';
   };
 
   const getCategoryColor = (category: MenuCategory) => {
     if (category.color) return category.color;
-    
+
     // Default colors based on category type
     const colors: Record<ItemCategory, string> = {
       red_wine: 'bg-red-100 text-red-800 border-red-200',
@@ -55,9 +55,9 @@ export const MenuCategoryTabs: React.FC<MenuCategoryTabsProps> = ({
       early_bird: 'bg-orange-100 text-orange-800 border-orange-200',
       dinner: 'bg-gray-100 text-gray-800 border-gray-200',
       side_orders: 'bg-lime-100 text-lime-800 border-lime-200',
-      children_menu: 'bg-pink-100 text-pink-800 border-pink-200'
+      children_menu: 'bg-pink-100 text-pink-800 border-pink-200',
     };
-    
+
     return colors[category.category_type] || 'bg-gray-100 text-gray-800 border-gray-200';
   };
 
@@ -75,7 +75,7 @@ export const MenuCategoryTabs: React.FC<MenuCategoryTabsProps> = ({
           🍽️ All Items
         </button>
       )}
-      
+
       {categories.map((category) => (
         <button
           key={category.id}
@@ -93,3 +93,5 @@ export const MenuCategoryTabs: React.FC<MenuCategoryTabsProps> = ({
     </div>
   );
 };
+
+export default MenuCategoryTabs;

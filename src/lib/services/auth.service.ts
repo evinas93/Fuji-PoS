@@ -170,29 +170,43 @@ export class AuthService {
 
   // Get current user session
   async getCurrentUser() {
-    const { data: { session }, error: sessionError } = await supabase.auth.getSession();
-    
-    if (sessionError || !session) {
-      return { data: null, error: sessionError || new Error('No active session') };
+    console.log('🔍 AuthService.getCurrentUser: Starting...');
+
+    try {
+      const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+      console.log('🔍 AuthService.getCurrentUser: Session check result', { session: !!session, sessionError });
+
+      if (sessionError || !session) {
+        console.log('❌ AuthService.getCurrentUser: No session or error');
+        return { data: null, error: sessionError || new Error('No active session') };
+      }
+
+      console.log('🔍 AuthService.getCurrentUser: Fetching profile for user:', session.user.id);
+      const { data: profile, error: profileError } = await supabase
+        .from('users')
+        .select('*')
+        .eq('id', session.user.id)
+        .single();
+
+      console.log('🔍 AuthService.getCurrentUser: Profile result', { profile: !!profile, profileError });
+
+      if (profileError) {
+        console.log('❌ AuthService.getCurrentUser: Profile error:', profileError);
+        return { data: null, error: profileError };
+      }
+
+      console.log('✅ AuthService.getCurrentUser: Success');
+      return {
+        data: {
+          user: session.user,
+          profile
+        },
+        error: null
+      };
+    } catch (error) {
+      console.log('❌ AuthService.getCurrentUser: Caught error:', error);
+      return { data: null, error: error as Error };
     }
-
-    const { data: profile, error: profileError } = await supabase
-      .from('users')
-      .select('*')
-      .eq('id', session.user.id)
-      .single();
-
-    if (profileError) {
-      return { data: null, error: profileError };
-    }
-
-    return { 
-      data: { 
-        user: session.user, 
-        profile 
-      }, 
-      error: null 
-    };
   }
 
   // Update user profile

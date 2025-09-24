@@ -1,0 +1,96 @@
+category,category_type,name,description,base_price,glass_price,bottle_price,lunch_price,dinner_price,preparation_time,is_available,is_featured
+Red Wine,red_wine,Shiraz 10.00,,30.0,30.0,,,,0,True,False
+Red Wine,red_wine,Merlot 11.00,,35.0,35.0,,,,0,True,False
+Red Wine,red_wine,Cabernet Sauvignon 11.00,,35.0,35.0,,,,0,True,False
+Red Wine,red_wine,Pinot Noir 11.00,,35.0,35.0,,,,0,True,False
+Red Wine,red_wine,Zinfandel 10.00,,30.0,30.0,,,,0,True,False
+White Wine,white_wine,Sauvignon Blanc 11.00,,35.0,35.0,,,,0,True,False
+White Wine,white_wine,Chardonnay 11.00,,38.0,38.0,,,,0,True,False
+White Wine,white_wine,Riesling 11.00,,35.0,35.0,,,,0,True,False
+White Wine,white_wine,Pinot Grigio 11.00,,35.0,35.0,,,,0,True,False
+Blush Wine,blush_wine,White Merlot 10.00,,30.0,30.0,,,,0,True,False
+Blush Wine,blush_wine,White Zinfandel 10.00,,30.0,30.0,,,,0,True,False
+Blush Wine,blush_wine,Rose 10.00,,30.0,30.0,,,,0,True,False
+Plum Wine,plum_wine,Kinsen 12.00,,40.0,40.0,,,,0,True,False
+Plum Wine,plum_wine,Hakatsuro 12.00,,40.0,40.0,,,,0,True,False
+Domestic Beer,domestic_beer,Small,,6.0,6.0,,,,0,True,False
+Domestic Beer,domestic_beer,Large,,12.0,12.0,,,,0,True,False
+Domestic Beer,domestic_beer,Small,,5.75,5.75,,,,0,True,False
+Domestic Beer,domestic_beer,Large Hot,,13.0,13.0,,,,0,True,False
+Domestic Beer,domestic_beer,Small Hot,,10.0,10.0,,,,0,True,False
+Sake,sake,(Free Refills) ………….,,3.15,3.15,,,,0,True,False
+Sake,sake,Lemonade …………….,,5.0,5.0,,,,0,True,False
+Sake,sake,Cranberry Juice …….,,5.5,5.5,,,,0,True,False
+Tempura Appetizer,tempura_appetizer,"increase your risk of foodborne illness, especially if you have certain medical conditions. Vegetable Roll",,8.5,,,,,15,True,True
+Tempura Appetizer,tempura_appetizer,Avocado Roll,,8.5,,,,,15,True,False
+Tempura Appetizer,tempura_appetizer,Cucumber Roll,,8.5,,,,,15,True,False
+Tempura Appetizer,tempura_appetizer,California Roll,,9.75,,,,,15,True,False
+Tempura Appetizer,tempura_appetizer,Crunchy Roll,,10.75,,,,,15,True,False
+Tempura Appetizer,tempura_appetizer,Shrimp Tempura Roll,,14.5,,,,,15,True,False
+Tempura Appetizer,tempura_appetizer,Eel Roll,,11.5,,,,,15,True,False
+Tempura Appetizer,tempura_appetizer,*Salmon Roll,,11.5,,,,,15,True,False
+Tempura Appetizer,tempura_appetizer,*Philadelphia Roll,,11.75,,,,,15,True,False
+Tempura Appetizer,tempura_appetizer,Calamari Roll,,11.75,,,,,15,True,False
+Tempura Appetizer,tempura_appetizer,*Spicy Tuna Roll,,11.5,,,,,15,True,False
+Tempura Appetizer,tempura_appetizer,Eel Nigiri (2 pieces),,10.5,,,,,15,True,False
+Tempura Appetizer,tempura_appetizer,Shrimp Tempura,,16.5,,,,,12,True,False
+Tempura Appetizer,tempura_appetizer,Calamari Tempura,,16.0,,,,,12,True,False
+Tempura Appetizer,tempura_appetizer,Vegetable Tempura,,14.0,,,,,12,True,False
+Side Orders,side_orders,Shrimp 10.25 Chicken Liver,,9.5,,,,,15,True,False
+Side Orders,side_orders,Scallops Market Chicken Fried Rice,,5.75,,,,,10,True,False
+Side Orders,side_orders,Lobster Market Salad or Soup,,4.75,,,,,8,True,False
+Side Orders,side_orders,Calamari 13.50 Noodles,,8.0,,,,,10,True,False
+Side Orders,side_orders,Mushroom 8.00 Mixed Vegetables,,11.0,,,,,15,True,False
+Side Orders,side_orders,Chicken Fried Rice,,5.5,,,,,10,True,False
+Side Orders,side_orders,Split Plate,,8.0,,,,,15,True,False
+Side Orders,side_orders,Spicy Sauce ( each),,1.5,,,,,15,True,False
+Side Orders,side_orders,*Steak and Chicken,,18.75,,,,,15,True,False
+Side Orders,side_orders,*Steak and Shrimp,,18.75,,,,,15,True,False
+Side Orders,side_orders,Chicken and Shrimp,,18.5,,,,,15,True,False
+Side Orders,side_orders,Vegetarian Lunch,,15.5,,,15.5,,15,True,False
+Side Orders,side_orders,Shrimp,,16.99,,,,,15,True,False
+Side Orders,side_orders,Pork,,15.75,,,,,15,True,False
+Side Orders,side_orders,Chicken,,16.75,,,,,15,True,False
+Side Orders,side_orders,*Steak (5 oz.),,17.5,,,,,15,True,False
+Side Orders,side_orders,*Filet Mignon (4 oz.),,25.0,,,,,15,True,False
+Side Orders,side_orders,*Steak,,19.5,,,,,15,True,False
+Side Orders,side_orders,Chicken,,17.95,,,,,15,True,False
+Side Orders,side_orders,Shrimp,,18.5,,,,,15,True,False
+Side Orders,side_orders,Chicken Fried Rice,,5.5,,,,,10,True,False
+Side Orders,side_orders,Split Plate,,8.0,,,,,15,True,False
+Side Orders,side_orders,Spicy Sauce (Add each),,1.5,,,,,15,True,False
+Side Orders,side_orders,*Steak and Chicken,,22.95,,,,,15,True,False
+Side Orders,side_orders,Chicken and Shrimp,,21.95,,,,,15,True,False
+Side Orders,side_orders,*Steak and Shrimp,,23.95,,,,,15,True,False
+Side Orders,side_orders,Chicken Fried Rice,,5.5,,,,,10,True,False
+Side Orders,side_orders,Add Teriyaki ( each),,1.5,,,,,15,True,False
+Side Orders,side_orders,Hibachi *Steak,,17.5,,,,,15,True,False
+Side Orders,side_orders,Hibachi Chicken,,16.75,,,,,15,True,False
+Side Orders,side_orders,Chicken Fried Rice,,5.5,,,,,10,True,False
+Side Orders,side_orders,Split Plate,,8.0,,,,,15,True,False
+Side Orders,side_orders,"Teriyaki Sauce, Ginger (Fresh) or Spicy Sauce (Add each)",,1.5,,,,,15,True,False
+Side Orders,side_orders,*Steak (7 oz. N.Y . Strip),,28.0,,,,,15,True,False
+Side Orders,side_orders,*Filet Mignon (6 oz.),,31.0,,,,,15,True,False
+Side Orders,side_orders,Pork,,24.0,,,,,15,True,False
+Side Orders,side_orders,Chicken,,23.75,,,,,15,True,False
+Side Orders,side_orders,Shrimp (12 pcs.incl. appetizer),,28.5,,,,,15,True,False
+Side Orders,side_orders,*Salmon,,28.5,,,,,15,True,False
+Side Orders,side_orders,*Tuna,,28.5,,,,,15,True,False
+Side Orders,side_orders,Sword Fish,,28.5,,,,,15,True,False
+Side Orders,side_orders,Calamari,,27.5,,,,,15,True,False
+Side Orders,side_orders,Chicken Yakisoba,,27.0,,,,,15,True,False
+Side Orders,side_orders,*Beef Yakisoba,,28.75,,,,,15,True,False
+Side Orders,side_orders,Shrimp Yakisoba,,29.0,,,,,15,True,False
+Side Orders,side_orders,Seafood Diablo (Spicy),,30.0,,,,,15,True,False
+Side Orders,side_orders,Chicken Diablo (Spicy),,28.5,,,,,15,True,False
+Side Orders,side_orders,*Beef Diablo (Spicy),,29.0,,,,,15,True,False
+Side Orders,side_orders,or vegetable sushi roll) 26.00 *Steak and Shrimp,,34.75,,,,,15,True,False
+Side Orders,side_orders,*Steak and Chicken,,33.0,,,,,15,True,False
+Side Orders,side_orders,Chicken and Shrimp,,32.0,,,,,15,True,False
+Side Orders,side_orders,*Filet Mignon and Shrimp,,40.5,,,,,15,True,False
+Side Orders,side_orders,*Filet Mignon and Chicken,,38.0,,,,,15,True,False
+Side Orders,side_orders,(16 pieces including appetizer),,35.5,,,,,15,True,False
+Side Orders,side_orders,(19 pieces including appetizer),,40.0,,,,,15,True,False
+Side Orders,side_orders,Warrior,,42.0,,,,,15,True,False
+Side Orders,side_orders,Special Triple,,36.5,,,,,15,True,True
+Side Orders,side_orders,Samurai,,38.5,,,,,15,True,False

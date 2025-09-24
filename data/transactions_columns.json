@@ -1,0 +1,42 @@
+{
+  "original_columns": [
+    "date",
+    "transaction",
+    "to_go",
+    "dine_in",
+    "unnamed_column_ 4",
+    "unnamed_column_ 5",
+    "coupon",
+    "gross",
+    "unnamed_column_ 8",
+    "total",
+    "service",
+    "receipt"
+  ],
+  "cleaned_columns": [
+    "id",
+    "date",
+    "sheet_name",
+    "row_index",
+    "transaction",
+    "to_go",
+    "dine_in",
+    "unnamed_column_ 4",
+    "unnamed_column_ 5",
+    "coupon",
+    "gross",
+    "unnamed_column_ 8",
+    "total",
+    "service",
+    "receipt",
+    "unnamed_column_ 12",
+    "unnamed_column_ 13",
+    "unnamed_column_ 14",
+    "unnamed_column_ 15",
+    "unnamed_column_ 16",
+    "unnamed_column_ 17",
+    "unnamed_column_ 18"
+  ],
+  "total_columns": 22,
+  "sample_sheet": "2-1"
+}

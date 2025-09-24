@@ -5,6 +5,11 @@ import type { ItemCategory, MenuItemInsert } from '../types/database';
 
 const menuService = new MenuService();
 
+// Hook to get all menu items (alias for useMenuItems)
+export function useMenu(categoryType?: ItemCategory) {
+  return useMenuItems(categoryType);
+}
+
 // Hook to get all menu items
 export function useMenuItems(categoryType?: ItemCategory) {
   return useQuery({
@@ -54,7 +59,7 @@ export function useSearchMenuItems(searchTerm: string) {
     queryKey: ['searchMenuItems', searchTerm],
     queryFn: async () => {
       if (!searchTerm.trim()) return [];
-      
+
       const { data, error } = await menuService.searchItems(searchTerm);
       if (error) throw error;
       return data;
@@ -117,9 +122,12 @@ export function useUpdateMenuItem() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async ({ itemId, updates }: { 
-      itemId: string; 
-      updates: Partial<MenuItemInsert> 
+    mutationFn: async ({
+      itemId,
+      updates,
+    }: {
+      itemId: string;
+      updates: Partial<MenuItemInsert>;
     }) => {
       const { data, error } = await menuService.updateMenuItem(itemId, updates);
       if (error) throw error;
@@ -178,11 +186,7 @@ export function useCreateModifier() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async (modifier: {
-      name: string;
-      price: number;
-      modifier_group: string;
-    }) => {
+    mutationFn: async (modifier: { name: string; price: number; modifier_group: string }) => {
       const { data, error } = await menuService.createModifier(modifier);
       if (error) throw error;
       return data;
@@ -198,14 +202,14 @@ export function useAddModifierToItem() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async ({ 
-      itemId, 
-      modifierId, 
-      options 
-    }: { 
-      itemId: string; 
-      modifierId: string; 
-      options?: { is_required?: boolean; is_default?: boolean } 
+    mutationFn: async ({
+      itemId,
+      modifierId,
+      options,
+    }: {
+      itemId: string;
+      modifierId: string;
+      options?: { is_required?: boolean; is_default?: boolean };
     }) => {
       const { data, error } = await menuService.addModifierToItem(itemId, modifierId, options);
       if (error) throw error;
@@ -231,4 +235,3 @@ export function useRemoveModifierFromItem() {
     },
   });
 }
-

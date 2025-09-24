@@ -1,0 +1,7 @@
+# Monthly Sales Summary
+# Import monthly aggregated sales data
+# Required fields: date, month_name, togo, dine_in, tax, gross_sale, gratuity, net_sale
+#
+# Month date (YYYY-MM-01),# Month name,# To-go sales amount,# Dine-in sales amount,# Tax collected,# Gross sales total,# Gratuity amount,# Coupon discounts,# Net sales after discounts,# Credit card tips,# Cash tips,# Credit card total,# Cash deposited,# Cash sales,# Merchant service charge,# Owner service charge,# Daily earnings calculated,# Number of closed days,# Working days in month
+date,month_name,togo,dine_in,tax,gross_sale,gratuity,coupon_subtract,net_sale,tip_cr,tip_cash,credt_total,deposited,cash,sc_merch,sc_owner,daily_earned,no_of_days_closed,no_of_days_month
+2024-01-01,January,1234.56,2345.67,287.45,3867.68,773.54,50.00,3817.68,650.00,123.54,3200.00,617.68,617.68,112.00,0.00,3705.68,4,27

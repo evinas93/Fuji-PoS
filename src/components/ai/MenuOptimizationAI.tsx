@@ -1,6 +1,6 @@
 // AI-powered menu optimization component
 import React, { useState } from 'react';
-import { useMenu } from '../../hooks/useMenu';
+import { useMenuItems } from '../../hooks/useMenu';
 import { Button } from '../ui/Button';
 
 interface MenuOptimizationAIProps {
@@ -28,17 +28,17 @@ interface MenuOptimization {
 }
 
 export const MenuOptimizationAI: React.FC<MenuOptimizationAIProps> = ({ className = '' }) => {
-  const { data: menuItems, isLoading } = useMenu();
+  const { data: menuItems, isLoading } = useMenuItems();
   const [optimization, setOptimization] = useState<MenuOptimization | null>(null);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
 
   // Simulate AI analysis (in real implementation, this would call an AI service)
   const analyzeMenu = async () => {
     setIsAnalyzing(true);
-    
+
     // Simulate AI processing time
-    await new Promise(resolve => setTimeout(resolve, 2000));
-    
+    await new Promise((resolve) => setTimeout(resolve, 2000));
+
     // Mock AI analysis results
     const mockOptimization: MenuOptimization = {
       underperformingItems: [
@@ -47,42 +47,42 @@ export const MenuOptimizationAI: React.FC<MenuOptimizationAIProps> = ({ classNam
           name: 'Spicy Tuna Roll',
           currentPrice: 12.99,
           suggestedPrice: 10.99,
-          reason: 'Low sales volume, high ingredient cost'
+          reason: 'Low sales volume, high ingredient cost',
         },
         {
           id: '2',
           name: 'Tempura Shrimp',
           currentPrice: 15.99,
           suggestedPrice: 13.99,
-          reason: 'Competitive pricing needed'
-        }
+          reason: 'Competitive pricing needed',
+        },
       ],
       popularCombinations: [
         {
           items: ['California Roll', 'Miso Soup'],
           frequency: 85,
-          suggestedPromotion: 'Bundle discount: 10% off when ordered together'
+          suggestedPromotion: 'Bundle discount: 10% off when ordered together',
         },
         {
           items: ['Dragon Roll', 'Green Tea'],
           frequency: 72,
-          suggestedPromotion: 'Lunch combo special'
-        }
+          suggestedPromotion: 'Lunch combo special',
+        },
       ],
       seasonalRecommendations: [
         {
           category: 'Appetizers',
           suggestion: 'Add seasonal vegetable tempura',
-          expectedImpact: '15% increase in appetizer sales'
+          expectedImpact: '15% increase in appetizer sales',
         },
         {
           category: 'Beverages',
           suggestion: 'Introduce hot sake for winter',
-          expectedImpact: '20% increase in beverage revenue'
-        }
-      ]
+          expectedImpact: '20% increase in beverage revenue',
+        },
+      ],
     };
-    
+
     setOptimization(mockOptimization);
     setIsAnalyzing(false);
   };
@@ -107,14 +107,11 @@ export const MenuOptimizationAI: React.FC<MenuOptimizationAIProps> = ({ classNam
         <div className="flex items-center justify-between">
           <div>
             <h3 className="text-lg font-medium text-gray-900">🧠 AI Menu Optimization</h3>
-            <p className="text-sm text-gray-500">Analyze menu performance and get AI recommendations</p>
+            <p className="text-sm text-gray-500">
+              Analyze menu performance and get AI recommendations
+            </p>
           </div>
-          <Button 
-            onClick={analyzeMenu} 
-            disabled={isAnalyzing}
-            variant="primary"
-            size="sm"
-          >
+          <Button onClick={analyzeMenu} disabled={isAnalyzing} variant="primary" size="sm">
             {isAnalyzing ? 'Analyzing...' : 'Analyze Menu'}
           </Button>
         </div>
@@ -128,7 +125,8 @@ export const MenuOptimizationAI: React.FC<MenuOptimizationAIProps> = ({ classNam
             </div>
             <h4 className="text-lg font-medium text-gray-900 mb-2">Ready to Optimize Your Menu</h4>
             <p className="text-gray-500 mb-6">
-              Click "Analyze Menu" to get AI-powered insights on pricing, combinations, and seasonal opportunities.
+              Click "Analyze Menu" to get AI-powered insights on pricing, combinations, and seasonal
+              opportunities.
             </p>
           </div>
         ) : (
@@ -138,7 +136,10 @@ export const MenuOptimizationAI: React.FC<MenuOptimizationAIProps> = ({ classNam
               <h4 className="text-md font-medium text-gray-900 mb-4">💰 Pricing Optimization</h4>
               <div className="space-y-3">
                 {optimization.underperformingItems.map((item, index) => (
-                  <div key={index} className="flex items-center justify-between p-4 bg-red-50 rounded-lg">
+                  <div
+                    key={index}
+                    className="flex items-center justify-between p-4 bg-red-50 rounded-lg"
+                  >
                     <div>
                       <p className="font-medium text-gray-900">{item.name}</p>
                       <p className="text-sm text-gray-500">{item.reason}</p>
@@ -147,7 +148,9 @@ export const MenuOptimizationAI: React.FC<MenuOptimizationAIProps> = ({ classNam
                       <div className="flex items-center space-x-2">
                         <span className="text-sm text-gray-500">${item.currentPrice}</span>
                         <span className="text-gray-400">→</span>
-                        <span className="text-sm font-medium text-green-600">${item.suggestedPrice}</span>
+                        <span className="text-sm font-medium text-green-600">
+                          ${item.suggestedPrice}
+                        </span>
                       </div>
                       <p className="text-xs text-gray-500">
                         Save: ${(item.currentPrice - item.suggestedPrice).toFixed(2)}
@@ -165,9 +168,7 @@ export const MenuOptimizationAI: React.FC<MenuOptimizationAIProps> = ({ classNam
                 {optimization.popularCombinations.map((combo, index) => (
                   <div key={index} className="p-4 bg-blue-50 rounded-lg">
                     <div className="flex items-center justify-between mb-2">
-                      <p className="font-medium text-gray-900">
-                        {combo.items.join(' + ')}
-                      </p>
+                      <p className="font-medium text-gray-900">{combo.items.join(' + ')}</p>
                       <span className="text-sm text-blue-600 font-medium">
                         {combo.frequency}% of orders
                       </span>
@@ -186,7 +187,9 @@ export const MenuOptimizationAI: React.FC<MenuOptimizationAIProps> = ({ classNam
                   <div key={index} className="p-4 bg-green-50 rounded-lg">
                     <div className="flex items-center justify-between mb-2">
                       <p className="font-medium text-gray-900">{rec.category}</p>
-                      <span className="text-sm text-green-600 font-medium">{rec.expectedImpact}</span>
+                      <span className="text-sm text-green-600 font-medium">
+                        {rec.expectedImpact}
+                      </span>
                     </div>
                     <p className="text-sm text-green-700">{rec.suggestion}</p>
                   </div>

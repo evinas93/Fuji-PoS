@@ -1,0 +1,18 @@
+{
+  "name": "supabase-import-scripts",
+  "version": "1.0.0",
+  "description": "Scripts for importing historical sales data into Supabase",
+  "type": "module",
+  "scripts": {
+    "import": "node supabase-import.js",
+    "create-tables": "echo 'Run the SQL migration in your Supabase dashboard first'"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.0.0",
+    "csv-parser": "^3.0.0",
+    "dotenv": "^16.0.0"
+  },
+  "engines": {
+    "node": ">=16.0.0"
+  }
+}

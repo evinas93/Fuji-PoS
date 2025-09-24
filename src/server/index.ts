@@ -8,7 +8,7 @@ import rateLimit from 'express-rate-limit';
 import { config } from 'dotenv';
 
 // Load environment variables
-config();
+config({ path: '.env.local' });
 
 // Import middleware and routes
 import { errorHandler } from './middleware/errorHandler';
@@ -36,29 +36,29 @@ const PORT = env.PORT || 3001;
 // =============================================
 
 // Security middleware
-app.use(helmet({
-  contentSecurityPolicy: {
-    directives: {
-      defaultSrc: ["'self'"],
-      styleSrc: ["'self'", "'unsafe-inline'"],
-      scriptSrc: ["'self'"],
-      imgSrc: ["'self'", "data:", "https:"],
-      connectSrc: ["'self'", "https://*.supabase.co"],
+app.use(
+  helmet({
+    contentSecurityPolicy: {
+      directives: {
+        defaultSrc: ["'self'"],
+        styleSrc: ["'self'", "'unsafe-inline'"],
+        scriptSrc: ["'self'"],
+        imgSrc: ["'self'", 'data:', 'https:'],
+        connectSrc: ["'self'", 'https://*.supabase.co'],
+      },
     },
-  },
-}));
+  })
+);
 
 // CORS configuration
-app.use(cors({
-  origin: [
-    'http://localhost:3000',
-    'https://localhost:3000',
-    env.NEXT_PUBLIC_APP_URL,
-  ],
-  credentials: true,
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
-}));
+app.use(
+  cors({
+    origin: ['http://localhost:3000', 'https://localhost:3000', env.NEXT_PUBLIC_APP_URL],
+    credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
+  })
+);
 
 // Rate limiting
 const limiter = rateLimit({
@@ -187,7 +187,7 @@ const server = app.listen(PORT, () => {
 // Graceful shutdown
 const gracefulShutdown = (signal: string) => {
   console.log(`\n${signal} received. Shutting down gracefully...`);
-  
+
   server.close(() => {
     console.log('HTTP server closed.');
     process.exit(0);
@@ -215,4 +215,3 @@ process.on('unhandledRejection', (reason, promise) => {
 });
 
 export default app;
-

@@ -30,6 +30,7 @@ export function useKitchenQueue() {
     },
     refetchInterval: 5000, // Kitchen needs frequent updates
     staleTime: 2000,
+    enabled: true, // Always enabled - let the component handle auth checks
   });
 }
 
@@ -77,17 +78,17 @@ export function useAddOrderItems() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async ({ 
-      orderId, 
-      items 
-    }: { 
-      orderId: string; 
+    mutationFn: async ({
+      orderId,
+      items,
+    }: {
+      orderId: string;
       items: Array<{
         item_id: string;
         quantity: number;
         modifiers?: Array<{ id: string; name: string; price: number }>;
         special_instructions?: string;
-      }>
+      }>;
     }) => {
       const { data, error } = await orderService.addOrderItems(orderId, items);
       if (error) throw error;
@@ -138,17 +139,17 @@ export function useUpdateOrderStatus() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async ({ 
-      orderId, 
-      status, 
-      options 
-    }: { 
-      orderId: string; 
-      status: OrderStatus; 
+    mutationFn: async ({
+      orderId,
+      status,
+      options,
+    }: {
+      orderId: string;
+      status: OrderStatus;
       options?: {
         cancelled_reason?: string;
         completed_by?: string;
-      }
+      };
     }) => {
       const { data, error } = await orderService.updateOrderStatus(orderId, status, options);
       if (error) throw error;
@@ -167,14 +168,14 @@ export function useCancelOrder() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async ({ 
-      orderId, 
-      reason, 
-      cancelledBy 
-    }: { 
-      orderId: string; 
-      reason: string; 
-      cancelledBy: string 
+    mutationFn: async ({
+      orderId,
+      reason,
+      cancelledBy,
+    }: {
+      orderId: string;
+      reason: string;
+      cancelledBy: string;
     }) => {
       const { data, error } = await orderService.cancelOrder(orderId, reason, cancelledBy);
       if (error) throw error;
@@ -235,14 +236,16 @@ export function useOrderEstimate(orderId: string) {
 }
 
 // Hook to get order history
-export function useOrderHistory(filters: {
-  server_id?: string;
-  start_date?: string;
-  end_date?: string;
-  status?: OrderStatus[];
-  limit?: number;
-  offset?: number;
-} = {}) {
+export function useOrderHistory(
+  filters: {
+    server_id?: string;
+    start_date?: string;
+    end_date?: string;
+    status?: OrderStatus[];
+    limit?: number;
+    offset?: number;
+  } = {}
+) {
   return useQuery({
     queryKey: ['orderHistory', filters],
     queryFn: async () => {
@@ -259,14 +262,14 @@ export function useApplyDiscount() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async ({ 
-      orderId, 
-      discountAmount, 
-      reason 
-    }: { 
-      orderId: string; 
-      discountAmount: number; 
-      reason: string 
+    mutationFn: async ({
+      orderId,
+      discountAmount,
+      reason,
+    }: {
+      orderId: string;
+      discountAmount: number;
+      reason: string;
     }) => {
       const { data, error } = await orderService.applyDiscount(orderId, discountAmount, reason);
       if (error) throw error;
@@ -284,16 +287,16 @@ export function useSplitOrder() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async ({ 
-      orderId, 
-      itemGroups 
-    }: { 
-      orderId: string; 
+    mutationFn: async ({
+      orderId,
+      itemGroups,
+    }: {
+      orderId: string;
       itemGroups: Array<{
         items: string[];
         table_id?: string;
         customer_name?: string;
-      }>
+      }>;
     }) => {
       const { data, error } = await orderService.splitOrder(orderId, itemGroups);
       if (error) throw error;

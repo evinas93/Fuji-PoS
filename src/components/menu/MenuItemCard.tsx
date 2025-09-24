@@ -18,7 +18,7 @@ export const MenuItemCard: React.FC<MenuItemCardProps> = ({
   onToggleAvailability,
   onAddToOrder,
   showAdminControls = false,
-  showOrderButton = true
+  showOrderButton = true,
 }) => {
   const getDisplayPrice = () => {
     if (item.glass_price && item.bottle_price) {
@@ -42,9 +42,11 @@ export const MenuItemCard: React.FC<MenuItemCardProps> = ({
   };
 
   return (
-    <div className={`bg-white rounded-lg shadow-md p-4 border ${
-      !item.is_available ? 'opacity-60' : ''
-    }`}>
+    <div
+      className={`bg-white rounded-lg shadow-md p-4 border ${
+        !item.is_available ? 'opacity-60' : ''
+      }`}
+    >
       {/* Header */}
       <div className="flex justify-between items-start mb-2">
         <div className="flex-1">
@@ -62,9 +64,7 @@ export const MenuItemCard: React.FC<MenuItemCardProps> = ({
       </div>
 
       {/* Description */}
-      {item.description && (
-        <p className="text-gray-700 text-sm mb-3">{item.description}</p>
-      )}
+      {item.description && <p className="text-gray-700 text-sm mb-3">{item.description}</p>}
 
       {/* Dietary Info */}
       <div className="flex flex-wrap gap-2 mb-3">
@@ -122,3 +122,5 @@ export const MenuItemCard: React.FC<MenuItemCardProps> = ({
     </div>
   );
 };
+
+export default MenuItemCard;

@@ -247,7 +247,7 @@ export function useFormatPercentage() {
 export function usePeriodComparison() {
   return useCallback((current: number, previous: number) => {
     if (previous === 0) return { change: 0, isIncrease: false, isDecrease: false };
-    
+
     const change = ((current - previous) / previous) * 100;
     return {
       change: Math.round(change * 100) / 100,
@@ -256,4 +256,74 @@ export function usePeriodComparison() {
       isFlat: change === 0
     };
   }, []);
+}
+
+// Comprehensive real-time analytics hook for dashboard
+export function useRealtimeAnalytics() {
+  return useQuery({
+    queryKey: ['realtimeAnalytics'],
+    queryFn: async () => {
+      // Get real-time metrics
+      const { data: realtimeData, error: realtimeError } = await analyticsService.getRealtimeMetrics();
+
+      if (realtimeError) {
+        throw new Error(realtimeError.message);
+      }
+
+      // Get hourly sales for trend chart
+      const { data: hourlySales, error: hourlyError } = await analyticsService.getPeakHoursAnalysis(1);
+
+      if (hourlyError) {
+        console.warn('Failed to get hourly data:', hourlyError);
+      }
+
+      // Get top selling items
+      const { data: topItems, error: topItemsError } = await analyticsService.getTopSellingItems(10);
+
+      if (topItemsError) {
+        console.warn('Failed to get top items:', topItemsError);
+      }
+
+      // Get server performance
+      const today = new Date().toISOString().split('T')[0];
+      const { data: serverStats, error: serverError } = await analyticsService.getServerPerformance({
+        start: today,
+        end: today
+      });
+
+      if (serverError) {
+        console.warn('Failed to get server stats:', serverError);
+      }
+
+      // Mock payment breakdown data (since payment system is not implemented yet)
+      const mockPaymentData = [
+        { method: 'cash' as const, count: Math.floor((realtimeData?.completedOrders || 0) * 0.3), totalAmount: (realtimeData?.totalSales || 0) * 0.3 },
+        { method: 'credit' as const, count: Math.floor((realtimeData?.completedOrders || 0) * 0.5), totalAmount: (realtimeData?.totalSales || 0) * 0.5 },
+        { method: 'debit' as const, count: Math.floor((realtimeData?.completedOrders || 0) * 0.2), totalAmount: (realtimeData?.totalSales || 0) * 0.2 }
+      ];
+
+      return {
+        // Main metrics
+        totalSales: realtimeData?.totalSales || 0,
+        totalOrders: realtimeData?.completedOrders || 0,
+        averageTicket: realtimeData?.averageTicket || 0,
+        activeOrders: realtimeData?.activeOrders || 0,
+
+        // Additional metrics
+        totalGratuity: realtimeData?.totalGratuity || 0,
+        dineInOrders: realtimeData?.dineInOrders || 0,
+        takeOutOrders: realtimeData?.takeOutOrders || 0,
+        activeStaff: realtimeData?.activeStaff || 0,
+        serversOnDuty: realtimeData?.serversOnDuty || 0,
+
+        // Chart data
+        hourlySales: hourlySales || [],
+        topItems: topItems || [],
+        serverStats: serverStats || [],
+        paymentBreakdown: mockPaymentData
+      };
+    },
+    refetchInterval: 30000, // Refresh every 30 seconds for real-time data
+    staleTime: 15000, // Consider data stale after 15 seconds
+  });
 }

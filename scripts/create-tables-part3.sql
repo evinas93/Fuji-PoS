@@ -1,0 +1,27 @@
+-- 3. TRANSACTIONS TABLE
+CREATE TABLE IF NOT EXISTS historical_transactions (
+    id TEXT PRIMARY KEY,
+    date DATE NOT NULL,
+    sheet_name TEXT NOT NULL,
+    row_index INTEGER,
+    transaction TEXT,
+    to_go DECIMAL(10,2) DEFAULT 0,
+    dine_in DECIMAL(10,2) DEFAULT 0,
+    coupon DECIMAL(10,2) DEFAULT 0,
+    gross DECIMAL(10,2) DEFAULT 0,
+    total DECIMAL(10,2) DEFAULT 0,
+    service DECIMAL(10,2) DEFAULT 0,
+    receipt DECIMAL(10,2) DEFAULT 0,
+    unnamed_column_4 DECIMAL(10,2) DEFAULT 0,
+    unnamed_column_5 DECIMAL(10,2) DEFAULT 0,
+    unnamed_column_8 DECIMAL(10,2) DEFAULT 0,
+    unnamed_column_12 DECIMAL(10,2) DEFAULT 0,
+    unnamed_column_13 DECIMAL(10,2) DEFAULT 0,
+    unnamed_column_14 DECIMAL(10,2) DEFAULT 0,
+    unnamed_column_15 DECIMAL(10,2) DEFAULT 0,
+    unnamed_column_16 DECIMAL(10,2) DEFAULT 0,
+    unnamed_column_17 DECIMAL(10,2) DEFAULT 0,
+    unnamed_column_18 DECIMAL(10,2) DEFAULT 0,
+    created_at TIMESTAMPTZ DEFAULT NOW(),
+    updated_at TIMESTAMPTZ DEFAULT NOW()
+);

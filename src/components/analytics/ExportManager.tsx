@@ -1,0 +1,381 @@
+// Export Manager Component for Analytics Reports
+import React, { useState } from 'react';
+import { useExportSalesData } from '../../hooks/useAnalytics';
+import { Button } from '../ui/Button';
+import { Modal } from '../ui/Modal';
+
+interface ExportManagerProps {
+  dateRange: { start: string; end: string };
+  reportType: 'sales' | 'analytics' | 'profitability' | 'servers';
+  data?: any[];
+  className?: string;
+}
+
+export const ExportManager: React.FC<ExportManagerProps> = ({
+  dateRange,
+  reportType,
+  data = [],
+  className = ''
+}) => {
+  const [showExportModal, setShowExportModal] = useState(false);
+  const [exportFormat, setExportFormat] = useState<'csv' | 'pdf' | 'json'>('csv');
+  const [emailDelivery, setEmailDelivery] = useState(false);
+  const [exportStatus, setExportStatus] = useState<'idle' | 'exporting' | 'success' | 'error'>('idle');
+
+  const { mutateAsync: exportSalesData } = useExportSalesData();
+
+  const handleExport = async () => {
+    setExportStatus('exporting');
+
+    try {
+      let exportData;
+
+      switch (exportFormat) {
+        case 'csv':
+          exportData = await exportSalesData({ dateRange, format: 'csv' });
+          downloadFile(exportData, `${reportType}-report-${dateRange.start}-to-${dateRange.end}.csv`, 'text/csv');
+          break;
+
+        case 'json':
+          exportData = await exportSalesData({ dateRange, format: 'json' });
+          downloadFile(JSON.stringify(exportData, null, 2), `${reportType}-report-${dateRange.start}-to-${dateRange.end}.json`, 'application/json');
+          break;
+
+        case 'pdf':
+          // Generate PDF using browser print functionality
+          generatePDFReport();
+          break;
+      }
+
+      if (emailDelivery) {
+        // Send email with attachment (would integrate with email service)
+        await sendEmailReport(exportData);
+      }
+
+      setExportStatus('success');
+      setTimeout(() => {
+        setExportStatus('idle');
+        setShowExportModal(false);
+      }, 2000);
+
+    } catch (error) {
+      console.error('Export failed:', error);
+      setExportStatus('error');
+      setTimeout(() => setExportStatus('idle'), 3000);
+    }
+  };
+
+  const downloadFile = (content: string, filename: string, mimeType: string) => {
+    const blob = new Blob([content], { type: mimeType });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = filename;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+  };
+
+  const generatePDFReport = () => {
+    // Create a formatted print view
+    const printWindow = window.open('', '_blank');
+    if (!printWindow) return;
+
+    const reportHTML = generateReportHTML();
+
+    printWindow.document.write(`
+      <!DOCTYPE html>
+      <html>
+        <head>
+          <title>${reportType.charAt(0).toUpperCase() + reportType.slice(1)} Report</title>
+          <style>
+            body { font-family: Arial, sans-serif; margin: 20px; }
+            .header { text-align: center; margin-bottom: 30px; }
+            .report-info { margin-bottom: 20px; }
+            table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+            th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+            th { background-color: #f5f5f5; font-weight: bold; }
+            .summary-stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; margin: 20px 0; }
+            .stat-card { border: 1px solid #ddd; padding: 15px; text-align: center; }
+            .stat-value { font-size: 24px; font-weight: bold; color: #2563eb; }
+            .stat-label { font-size: 12px; color: #6b7280; }
+            @media print {
+              body { margin: 0; }
+              .no-print { display: none; }
+            }
+          </style>
+        </head>
+        <body>
+          ${reportHTML}
+        </body>
+      </html>
+    `);
+
+    printWindow.document.close();
+    printWindow.focus();
+
+    // Auto-print after content loads
+    setTimeout(() => {
+      printWindow.print();
+      printWindow.close();
+    }, 250);
+  };
+
+  const generateReportHTML = () => {
+    const reportTitle = `${reportType.charAt(0).toUpperCase() + reportType.slice(1)} Report`;
+    const dateStr = `${new Date(dateRange.start).toLocaleDateString()} - ${new Date(dateRange.end).toLocaleDateString()}`;
+
+    return `
+      <div class="header">
+        <h1>🏮 Fuji Restaurant</h1>
+        <h2>${reportTitle}</h2>
+        <p>Period: ${dateStr}</p>
+        <p>Generated: ${new Date().toLocaleString()}</p>
+      </div>
+
+      <div class="report-info">
+        <p><strong>Report Type:</strong> ${reportTitle}</p>
+        <p><strong>Date Range:</strong> ${dateStr}</p>
+        <p><strong>Records:</strong> ${data.length}</p>
+      </div>
+
+      ${generateDataTable()}
+
+      <div style="margin-top: 30px; text-align: center; color: #6b7280;">
+        <p>Generated by Fuji POS Analytics System</p>
+        <p>For questions about this report, contact your system administrator</p>
+      </div>
+    `;
+  };
+
+  const generateDataTable = () => {
+    if (!data || data.length === 0) {
+      return '<p>No data available for the selected period.</p>';
+    }
+
+    // Get table headers based on report type
+    let headers: string[] = [];
+    let getRowData: (item: any) => string[] = () => [];
+
+    switch (reportType) {
+      case 'sales':
+        headers = ['Date', 'Orders', 'Gross Sales', 'Net Sales', 'Average Ticket'];
+        getRowData = (item) => [
+          new Date(item.sales_date || item.date).toLocaleDateString(),
+          (item.total_orders || item.orderCount || 0).toString(),
+          `$${(item.gross_sales || item.totalSales || 0).toLocaleString()}`,
+          `$${(item.net_sales || item.totalSales || 0).toLocaleString()}`,
+          `$${(item.average_ticket || item.averageTicket || 0).toFixed(2)}`
+        ];
+        break;
+
+      case 'profitability':
+        headers = ['Item Name', 'Category', 'Price', 'Cost', 'Profit', 'Margin %', 'Units Sold'];
+        getRowData = (item) => [
+          item.name || 'Unknown',
+          item.categoryName || item.menu_categories?.name || 'Unknown',
+          `$${(item.base_price || 0).toFixed(2)}`,
+          `$${(item.cost || 0).toFixed(2)}`,
+          `$${(item.profit || 0).toFixed(2)}`,
+          `${(item.profitMargin || 0).toFixed(1)}%`,
+          (item.totalQuantity || 0).toString()
+        ];
+        break;
+
+      case 'servers':
+        headers = ['Server Name', 'Total Sales', 'Orders', 'Average Ticket', 'Tips'];
+        getRowData = (item) => [
+          item.fullName || `${item.firstName || ''} ${item.lastName || ''}`.trim() || item.username || 'Unknown',
+          `$${(item.totalSales || 0).toLocaleString()}`,
+          (item.totalOrders || 0).toString(),
+          `$${(item.averageTicket || 0).toFixed(2)}`,
+          `$${(item.totalGratuity || 0).toLocaleString()}`
+        ];
+        break;
+
+      default:
+        headers = ['Data'];
+        getRowData = (item) => [JSON.stringify(item)];
+    }
+
+    const headerRow = headers.map(h => `<th>${h}</th>`).join('');
+    const dataRows = data.map(item => {
+      const rowData = getRowData(item);
+      return `<tr>${rowData.map(d => `<td>${d}</td>`).join('')}</tr>`;
+    }).join('');
+
+    return `
+      <table>
+        <thead>
+          <tr>${headerRow}</tr>
+        </thead>
+        <tbody>
+          ${dataRows}
+        </tbody>
+      </table>
+    `;
+  };
+
+  const sendEmailReport = async (exportData: any) => {
+    // This would integrate with an email service like SendGrid or Supabase Edge Functions
+    console.log('Email delivery would be implemented here', {
+      reportType,
+      dateRange,
+      format: exportFormat,
+      dataSize: exportData?.length || 0
+    });
+
+    // Mock implementation - would send via API
+    return new Promise(resolve => setTimeout(resolve, 1000));
+  };
+
+  const getExportIcon = () => {
+    switch (exportFormat) {
+      case 'csv': return '📊';
+      case 'pdf': return '📄';
+      case 'json': return '🔧';
+      default: return '📋';
+    }
+  };
+
+  const getStatusIcon = () => {
+    switch (exportStatus) {
+      case 'exporting': return '⏳';
+      case 'success': return '✅';
+      case 'error': return '❌';
+      default: return '📋';
+    }
+  };
+
+  return (
+    <>
+      <Button
+        onClick={() => setShowExportModal(true)}
+        variant="secondary"
+        size="sm"
+        className={className}
+        disabled={exportStatus === 'exporting'}
+      >
+        {getStatusIcon()} Export Report
+      </Button>
+
+      <Modal
+        isOpen={showExportModal}
+        onClose={() => setShowExportModal(false)}
+        title="Export Report"
+      >
+        <div className="space-y-6">
+          {/* Export Format Selection */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Export Format
+            </label>
+            <div className="grid grid-cols-3 gap-3">
+              <button
+                onClick={() => setExportFormat('csv')}
+                className={`p-3 border rounded-lg text-center transition-colors ${
+                  exportFormat === 'csv'
+                    ? 'border-blue-500 bg-blue-50 text-blue-700'
+                    : 'border-gray-300 hover:border-gray-400'
+                }`}
+              >
+                <div className="text-2xl mb-1">📊</div>
+                <div className="text-sm font-medium">CSV</div>
+                <div className="text-xs text-gray-500">Excel compatible</div>
+              </button>
+
+              <button
+                onClick={() => setExportFormat('pdf')}
+                className={`p-3 border rounded-lg text-center transition-colors ${
+                  exportFormat === 'pdf'
+                    ? 'border-blue-500 bg-blue-50 text-blue-700'
+                    : 'border-gray-300 hover:border-gray-400'
+                }`}
+              >
+                <div className="text-2xl mb-1">📄</div>
+                <div className="text-sm font-medium">PDF</div>
+                <div className="text-xs text-gray-500">Print ready</div>
+              </button>
+
+              <button
+                onClick={() => setExportFormat('json')}
+                className={`p-3 border rounded-lg text-center transition-colors ${
+                  exportFormat === 'json'
+                    ? 'border-blue-500 bg-blue-50 text-blue-700'
+                    : 'border-gray-300 hover:border-gray-400'
+                }`}
+              >
+                <div className="text-2xl mb-1">🔧</div>
+                <div className="text-sm font-medium">JSON</div>
+                <div className="text-xs text-gray-500">API format</div>
+              </button>
+            </div>
+          </div>
+
+          {/* Email Delivery Option */}
+          <div className="flex items-center">
+            <input
+              type="checkbox"
+              id="email-delivery"
+              checked={emailDelivery}
+              onChange={(e) => setEmailDelivery(e.target.checked)}
+              className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+            />
+            <label htmlFor="email-delivery" className="ml-2 block text-sm text-gray-700">
+              Send report via email (requires email configuration)
+            </label>
+          </div>
+
+          {/* Report Summary */}
+          <div className="bg-gray-50 rounded-lg p-4">
+            <h4 className="font-medium text-gray-900 mb-2">Export Summary</h4>
+            <div className="text-sm text-gray-600 space-y-1">
+              <div>Report Type: <span className="font-medium">{reportType}</span></div>
+              <div>Period: <span className="font-medium">{new Date(dateRange.start).toLocaleDateString()} - {new Date(dateRange.end).toLocaleDateString()}</span></div>
+              <div>Format: <span className="font-medium">{exportFormat.toUpperCase()}</span></div>
+              <div>Records: <span className="font-medium">{data.length}</span></div>
+            </div>
+          </div>
+
+          {/* Export Status */}
+          {exportStatus !== 'idle' && (
+            <div className={`p-4 rounded-lg ${
+              exportStatus === 'success' ? 'bg-green-50 text-green-800' :
+              exportStatus === 'error' ? 'bg-red-50 text-red-800' :
+              'bg-blue-50 text-blue-800'
+            }`}>
+              <div className="flex items-center">
+                <span className="text-lg mr-2">{getStatusIcon()}</span>
+                <div>
+                  {exportStatus === 'exporting' && 'Generating report...'}
+                  {exportStatus === 'success' && 'Report exported successfully!'}
+                  {exportStatus === 'error' && 'Export failed. Please try again.'}
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Action Buttons */}
+          <div className="flex justify-end space-x-3">
+            <Button
+              variant="secondary"
+              onClick={() => setShowExportModal(false)}
+              disabled={exportStatus === 'exporting'}
+            >
+              Cancel
+            </Button>
+            <Button
+              onClick={handleExport}
+              disabled={exportStatus === 'exporting'}
+            >
+              {exportStatus === 'exporting' ? 'Exporting...' : `${getExportIcon()} Export ${exportFormat.toUpperCase()}`}
+            </Button>
+          </div>
+        </div>
+      </Modal>
+    </>
+  );
+};
+
+export default ExportManager;

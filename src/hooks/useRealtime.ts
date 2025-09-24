@@ -2,6 +2,33 @@
 import { useEffect, useCallback, useRef } from 'react';
 import { RealtimeService } from '../lib/services/realtime.service';
 
+// Simple useRealtime hook for basic subscription management
+export function useRealtime() {
+  const realtimeService = useRef<RealtimeService>();
+
+  useEffect(() => {
+    realtimeService.current = new RealtimeService();
+    return () => {
+      realtimeService.current?.cleanup();
+    };
+  }, []);
+
+  const subscribe = useCallback((table: string, callback: (payload: any) => void) => {
+    if (!realtimeService.current) return null;
+    
+    const subscription = realtimeService.current.subscribeToKitchenOrders(callback);
+    return subscription;
+  }, []);
+
+  const unsubscribe = useCallback((subscription: any) => {
+    if (realtimeService.current && subscription) {
+      realtimeService.current.unsubscribe('kitchen_orders');
+    }
+  }, []);
+
+  return { subscribe, unsubscribe };
+}
+
 // Hook for kitchen orders real-time updates
 export function useKitchenOrders(onNewOrder: (order: any) => void) {
   const realtimeService = useRef<RealtimeService>();

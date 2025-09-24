@@ -1,6 +1,6 @@
 // Bulk update API endpoint for menu management
 import type { NextApiRequest, NextApiResponse } from 'next';
-import { createServerSupabaseClient } from '../../../server/config/supabase';
+import { supabase } from '../../../lib/supabase';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== 'POST') {
@@ -8,10 +8,11 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     return res.status(405).json({ error: `Method ${req.method} not allowed` });
   }
 
-  const supabase = createServerSupabaseClient(req, res);
-
   // Check authentication
-  const { data: { user }, error: authError } = await supabase.auth.getUser();
+  const {
+    data: { user },
+    error: authError,
+  } = await supabase.auth.getUser();
   if (authError || !user) {
     return res.status(401).json({ error: 'Unauthorized' });
   }
@@ -63,19 +64,22 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     return res.status(200).json({
       message: `Bulk operation completed successfully`,
       count,
-      operation
+      operation,
     });
-
   } catch (error) {
     console.error('Bulk update error:', error);
     return res.status(500).json({ error: 'Internal server error' });
   }
 }
 
-async function handleBulkPriceUpdate(supabase: any, categoryId: string, data: {
-  price_multiplier: number;
-  price_adjustment: number;
-}) {
+async function handleBulkPriceUpdate(
+  supabase: any,
+  categoryId: string,
+  data: {
+    price_multiplier: number;
+    price_adjustment: number;
+  }
+) {
   const { price_multiplier, price_adjustment } = data;
 
   if (!price_multiplier || price_multiplier <= 0) {
@@ -83,16 +87,22 @@ async function handleBulkPriceUpdate(supabase: any, categoryId: string, data: {
   }
 
   // Build the update query
-  let query = supabase
-    .from('menu_items')
-    .update({
-      base_price: supabase.raw(`(base_price * ${price_multiplier}) + ${price_adjustment}`),
-      glass_price: supabase.raw(`CASE WHEN glass_price IS NOT NULL THEN (glass_price * ${price_multiplier}) + ${price_adjustment} ELSE glass_price END`),
-      bottle_price: supabase.raw(`CASE WHEN bottle_price IS NOT NULL THEN (bottle_price * ${price_multiplier}) + ${price_adjustment} ELSE bottle_price END`),
-      lunch_price: supabase.raw(`CASE WHEN lunch_price IS NOT NULL THEN (lunch_price * ${price_multiplier}) + ${price_adjustment} ELSE lunch_price END`),
-      dinner_price: supabase.raw(`CASE WHEN dinner_price IS NOT NULL THEN (dinner_price * ${price_multiplier}) + ${price_adjustment} ELSE dinner_price END`),
-      updated_at: new Date().toISOString()
-    });
+  let query = supabase.from('menu_items').update({
+    base_price: supabase.raw(`(base_price * ${price_multiplier}) + ${price_adjustment}`),
+    glass_price: supabase.raw(
+      `CASE WHEN glass_price IS NOT NULL THEN (glass_price * ${price_multiplier}) + ${price_adjustment} ELSE glass_price END`
+    ),
+    bottle_price: supabase.raw(
+      `CASE WHEN bottle_price IS NOT NULL THEN (bottle_price * ${price_multiplier}) + ${price_adjustment} ELSE bottle_price END`
+    ),
+    lunch_price: supabase.raw(
+      `CASE WHEN lunch_price IS NOT NULL THEN (lunch_price * ${price_multiplier}) + ${price_adjustment} ELSE lunch_price END`
+    ),
+    dinner_price: supabase.raw(
+      `CASE WHEN dinner_price IS NOT NULL THEN (dinner_price * ${price_multiplier}) + ${price_adjustment} ELSE dinner_price END`
+    ),
+    updated_at: new Date().toISOString(),
+  });
 
   // Apply category filter if specified
   if (categoryId) {
@@ -102,7 +112,7 @@ async function handleBulkPriceUpdate(supabase: any, categoryId: string, data: {
   // Only update available items
   query = query.eq('is_available', true);
 
-  const { data, error, count } = await query.select('id', { count: 'exact' });
+  const { data: updatedData, error, count } = await query.select('id', { count: 'exact' });
 
   if (error) {
     return { error: error.message };
@@ -111,25 +121,27 @@ async function handleBulkPriceUpdate(supabase: any, categoryId: string, data: {
   return { count: count || 0 };
 }
 
-async function handleBulkAvailabilityUpdate(supabase: any, categoryId: string, data: {
-  is_available: boolean;
-}) {
-  const { is_available } = data;
+async function handleBulkAvailabilityUpdate(
+  supabase: any,
+  categoryId: string,
+  updateData: {
+    is_available: boolean;
+  }
+) {
+  const { is_available } = updateData;
 
   // Build the update query
-  let query = supabase
-    .from('menu_items')
-    .update({
-      is_available,
-      updated_at: new Date().toISOString()
-    });
+  let query = supabase.from('menu_items').update({
+    is_available,
+    updated_at: new Date().toISOString(),
+  });
 
   // Apply category filter if specified
   if (categoryId) {
     query = query.eq('category_id', categoryId);
   }
 
-  const { data, error, count } = await query.select('id', { count: 'exact' });
+  const { data: updatedData, error, count } = await query.select('id', { count: 'exact' });
 
   if (error) {
     return { error: error.message };
@@ -140,10 +152,7 @@ async function handleBulkAvailabilityUpdate(supabase: any, categoryId: string, d
 
 async function handleBulkReorder(supabase: any, categoryId: string) {
   // Get all items in the category ordered alphabetically
-  let query = supabase
-    .from('menu_items')
-    .select('id, name')
-    .order('name');
+  let query = supabase.from('menu_items').select('id, name').order('name');
 
   // Apply category filter if specified
   if (categoryId) {
@@ -164,7 +173,7 @@ async function handleBulkReorder(supabase: any, categoryId: string) {
   const updates = items.map((item: any, index: number) => ({
     id: item.id,
     display_order: index + 1,
-    updated_at: new Date().toISOString()
+    updated_at: new Date().toISOString(),
   }));
 
   // Use upsert to update multiple records

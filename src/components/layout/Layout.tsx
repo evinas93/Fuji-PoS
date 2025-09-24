@@ -14,21 +14,11 @@ interface LayoutProps {
   title?: string;
 }
 
-export const Layout: React.FC<LayoutProps> = ({
-  children,
-  showSidebar = true,
-  title,
-}) => {
+export const Layout: React.FC<LayoutProps> = ({ children, showSidebar = true, title }) => {
   const router = useRouter();
   const { data: currentUser, isLoading } = useCurrentUser();
-  
-  const {
-    showWarning,
-    extendSession,
-    logout,
-    formatTimeRemaining,
-    isAuthenticated,
-  } = useSession({
+
+  const { showWarning, extendSession, logout, formatTimeRemaining, isAuthenticated } = useSession({
     timeoutMinutes: 15,
     warningMinutes: 2,
     onSessionExpiry: () => {
@@ -39,15 +29,10 @@ export const Layout: React.FC<LayoutProps> = ({
     },
   });
 
-  // Redirect to login if not authenticated
-  React.useEffect(() => {
-    if (!isLoading && !currentUser && !router.pathname.startsWith('/auth')) {
-      router.push('/auth/login');
-    }
-  }, [isLoading, currentUser, router]);
+  // Don't redirect here - let individual pages handle their own auth logic
 
   // Show loading screen while checking authentication
-  if (isLoading || (!currentUser && !router.pathname.startsWith('/auth'))) {
+  if (isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
         <div className="text-center">
@@ -78,16 +63,12 @@ export const Layout: React.FC<LayoutProps> = ({
 
       <div className="flex">
         {/* Sidebar */}
-        {showSidebar && isAuthenticated && (
-          <Sidebar currentUser={currentUser?.profile} />
-        )}
+        {showSidebar && isAuthenticated && <Sidebar currentUser={currentUser?.profile} />}
 
         {/* Main Content */}
         <main className={`flex-1 ${showSidebar ? 'ml-64' : ''} mt-16`}>
           <div className="py-6">
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-              {children}
-            </div>
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">{children}</div>
           </div>
         </main>
       </div>

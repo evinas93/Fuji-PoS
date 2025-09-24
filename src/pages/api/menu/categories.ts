@@ -1,14 +1,21 @@
 // Menu categories API endpoints for Fuji POS System
 import type { NextApiRequest, NextApiResponse } from 'next';
 import { MenuService } from '../../../lib/services/menu.service';
-import { createServerSupabaseClient } from '../../../server/config/supabase';
+import { supabase } from '../../../server/config/supabase';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
-  const supabase = createServerSupabaseClient(req, res);
   const menuService = new MenuService();
 
-  // Check authentication
-  const { data: { user }, error: authError } = await supabase.auth.getUser();
+  // For GET requests, allow unauthenticated access to view categories
+  if (req.method === 'GET') {
+    return handleGetCategories(req, res, menuService);
+  }
+
+  // For other methods, check authentication
+  const {
+    data: { user },
+    error: authError,
+  } = await supabase.auth.getUser();
   if (authError || !user) {
     return res.status(401).json({ error: 'Unauthorized' });
   }
@@ -23,37 +30,38 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   const userRole = userProfile?.role;
 
   switch (req.method) {
-    case 'GET':
-      return handleGetCategories(req, res, menuService);
-    
     case 'POST':
       if (!['admin', 'manager'].includes(userRole)) {
         return res.status(403).json({ error: 'Insufficient permissions' });
       }
       return handleCreateCategory(req, res, supabase);
-    
+
     case 'PUT':
       if (!['admin', 'manager'].includes(userRole)) {
         return res.status(403).json({ error: 'Insufficient permissions' });
       }
       return handleUpdateCategory(req, res, supabase);
-    
+
     case 'DELETE':
       if (!['admin', 'manager'].includes(userRole)) {
         return res.status(403).json({ error: 'Insufficient permissions' });
       }
       return handleDeleteCategory(req, res, supabase);
-    
+
     default:
       res.setHeader('Allow', ['GET', 'POST', 'PUT', 'DELETE']);
       return res.status(405).json({ error: `Method ${req.method} not allowed` });
   }
 }
 
-async function handleGetCategories(req: NextApiRequest, res: NextApiResponse, menuService: MenuService) {
+async function handleGetCategories(
+  req: NextApiRequest,
+  res: NextApiResponse,
+  menuService: MenuService
+) {
   try {
     const result = await menuService.getCategories();
-    
+
     if (result.error) {
       return res.status(400).json({ error: result.error.message });
     }
@@ -68,11 +76,11 @@ async function handleGetCategories(req: NextApiRequest, res: NextApiResponse, me
 async function handleCreateCategory(req: NextApiRequest, res: NextApiResponse, supabase: any) {
   try {
     const { name, category_type, display_order, icon, color } = req.body;
-    
+
     // Validate required fields
     if (!name || !category_type) {
-      return res.status(400).json({ 
-        error: 'Missing required fields: name, category_type' 
+      return res.status(400).json({
+        error: 'Missing required fields: name, category_type',
       });
     }
 
@@ -85,7 +93,7 @@ async function handleCreateCategory(req: NextApiRequest, res: NextApiResponse, s
         .order('display_order', { ascending: false })
         .limit(1)
         .single();
-      
+
       order = (lastCategory?.display_order || 0) + 1;
     }
 
@@ -97,7 +105,7 @@ async function handleCreateCategory(req: NextApiRequest, res: NextApiResponse, s
         display_order: order,
         icon,
         color,
-        is_active: true
+        is_active: true,
       })
       .select()
       .single();
@@ -106,9 +114,9 @@ async function handleCreateCategory(req: NextApiRequest, res: NextApiResponse, s
       return res.status(400).json({ error: error.message });
     }
 
-    return res.status(201).json({ 
+    return res.status(201).json({
       data,
-      message: 'Category created successfully' 
+      message: 'Category created successfully',
     });
   } catch (error) {
     console.error('Error creating category:', error);
@@ -119,7 +127,7 @@ async function handleCreateCategory(req: NextApiRequest, res: NextApiResponse, s
 async function handleUpdateCategory(req: NextApiRequest, res: NextApiResponse, supabase: any) {
   try {
     const { id, ...updateData } = req.body;
-    
+
     if (!id) {
       return res.status(400).json({ error: 'Category ID is required' });
     }
@@ -135,9 +143,9 @@ async function handleUpdateCategory(req: NextApiRequest, res: NextApiResponse, s
       return res.status(400).json({ error: error.message });
     }
 
-    return res.status(200).json({ 
+    return res.status(200).json({
       data,
-      message: 'Category updated successfully' 
+      message: 'Category updated successfully',
     });
   } catch (error) {
     console.error('Error updating category:', error);
@@ -148,7 +156,7 @@ async function handleUpdateCategory(req: NextApiRequest, res: NextApiResponse, s
 async function handleDeleteCategory(req: NextApiRequest, res: NextApiResponse, supabase: any) {
   try {
     const { id } = req.query;
-    
+
     if (!id || typeof id !== 'string') {
       return res.status(400).json({ error: 'Category ID is required' });
     }
@@ -165,22 +173,19 @@ async function handleDeleteCategory(req: NextApiRequest, res: NextApiResponse, s
     }
 
     if (items && items.length > 0) {
-      return res.status(400).json({ 
-        error: 'Cannot delete category with existing menu items. Move or delete items first.' 
+      return res.status(400).json({
+        error: 'Cannot delete category with existing menu items. Move or delete items first.',
       });
     }
 
-    const { error } = await supabase
-      .from('menu_categories')
-      .delete()
-      .eq('id', id);
+    const { error } = await supabase.from('menu_categories').delete().eq('id', id);
 
     if (error) {
       return res.status(400).json({ error: error.message });
     }
 
-    return res.status(200).json({ 
-      message: 'Category deleted successfully' 
+    return res.status(200).json({
+      message: 'Category deleted successfully',
     });
   } catch (error) {
     console.error('Error deleting category:', error);

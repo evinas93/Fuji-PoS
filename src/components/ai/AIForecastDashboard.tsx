@@ -9,10 +9,10 @@ interface AIForecastDashboardProps {
 
 export const AIForecastDashboard: React.FC<AIForecastDashboardProps> = ({ className = '' }) => {
   const { forecasts, accuracy, isLoading, error, refetch } = useSalesForecastRealtime({
-    daysAhead: 7
+    daysAhead: 7,
   });
-  
-  const insights = useForecastInsights(forecasts);
+
+  const insights = useForecastInsights(Array.isArray(forecasts) ? forecasts : []);
 
   if (isLoading) {
     return (
@@ -50,12 +50,14 @@ export const AIForecastDashboard: React.FC<AIForecastDashboardProps> = ({ classN
         <div className="flex items-center justify-between">
           <div>
             <h3 className="text-lg font-medium text-gray-900">🤖 AI Sales Forecast</h3>
-            <p className="text-sm text-gray-500">Next 7 days prediction with {insights.averageConfidence}% confidence</p>
+            <p className="text-sm text-gray-500">
+              Next 7 days prediction with {insights.averageConfidence}% confidence
+            </p>
           </div>
           <div className="flex items-center space-x-2">
-            {accuracy && (
+            {Boolean(accuracy && typeof accuracy === 'object' && 'accuracy' in accuracy) && (
               <div className="text-sm text-gray-500">
-                Accuracy: <span className="font-medium">{accuracy.accuracy}%</span>
+                Accuracy: <span className="font-medium">{(accuracy as any).accuracy}%</span>
               </div>
             )}
             <Button onClick={() => refetch()} variant="secondary" size="sm">
@@ -109,9 +111,7 @@ export const AIForecastDashboard: React.FC<AIForecastDashboardProps> = ({ classN
               </div>
               <div className="ml-4">
                 <p className="text-sm font-medium text-purple-600">AI Confidence</p>
-                <p className="text-2xl font-bold text-purple-900">
-                  {insights.averageConfidence}%
-                </p>
+                <p className="text-2xl font-bold text-purple-900">{insights.averageConfidence}%</p>
               </div>
             </div>
           </div>
@@ -121,49 +121,58 @@ export const AIForecastDashboard: React.FC<AIForecastDashboardProps> = ({ classN
         <div className="mb-6">
           <h4 className="text-md font-medium text-gray-900 mb-4">Daily Forecasts</h4>
           <div className="space-y-3">
-            {forecasts.map((forecast, index) => (
-              <div key={forecast.date} className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
-                <div className="flex items-center space-x-4">
-                  <div className="w-10 h-10 bg-white rounded-full flex items-center justify-center">
-                    <span className="text-sm font-medium text-gray-600">
-                      {new Date(forecast.date).getDate()}
-                    </span>
-                  </div>
-                  <div>
-                    <p className="font-medium text-gray-900">
-                      {new Date(forecast.date).toLocaleDateString('en-US', { 
-                        weekday: 'long', 
-                        month: 'short', 
-                        day: 'numeric' 
-                      })}
-                    </p>
-                    <p className="text-sm text-gray-500">
-                      vs. avg: ${forecast.historicalAverage.toLocaleString()}
-                    </p>
-                  </div>
-                </div>
-                
-                <div className="flex items-center space-x-4">
-                  <div className="text-right">
-                    <p className="text-lg font-bold text-gray-900">
-                      ${forecast.predictedRevenue.toLocaleString()}
-                    </p>
-                    <div className="flex items-center space-x-2">
-                      <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
-                        forecast.trend === 'up' ? 'bg-green-100 text-green-800' :
-                        forecast.trend === 'down' ? 'bg-red-100 text-red-800' :
-                        'bg-gray-100 text-gray-800'
-                      }`}>
-                        {forecast.trend === 'up' ? '↗' : forecast.trend === 'down' ? '↘' : '→'} {forecast.trend}
+            {Array.isArray(forecasts) &&
+              forecasts.map((forecast, index) => (
+                <div
+                  key={forecast.date}
+                  className="flex items-center justify-between p-4 bg-gray-50 rounded-lg"
+                >
+                  <div className="flex items-center space-x-4">
+                    <div className="w-10 h-10 bg-white rounded-full flex items-center justify-center">
+                      <span className="text-sm font-medium text-gray-600">
+                        {new Date(forecast.date).getDate()}
                       </span>
-                      <span className="text-xs text-gray-500">
-                        {Math.round(forecast.confidence * 100)}% confidence
-                      </span>
+                    </div>
+                    <div>
+                      <p className="font-medium text-gray-900">
+                        {new Date(forecast.date).toLocaleDateString('en-US', {
+                          weekday: 'long',
+                          month: 'short',
+                          day: 'numeric',
+                        })}
+                      </p>
+                      <p className="text-sm text-gray-500">
+                        vs. avg: ${forecast.historicalAverage.toLocaleString()}
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center space-x-4">
+                    <div className="text-right">
+                      <p className="text-lg font-bold text-gray-900">
+                        ${forecast.predictedRevenue.toLocaleString()}
+                      </p>
+                      <div className="flex items-center space-x-2">
+                        <span
+                          className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
+                            forecast.trend === 'up'
+                              ? 'bg-green-100 text-green-800'
+                              : forecast.trend === 'down'
+                                ? 'bg-red-100 text-red-800'
+                                : 'bg-gray-100 text-gray-800'
+                          }`}
+                        >
+                          {forecast.trend === 'up' ? '↗' : forecast.trend === 'down' ? '↘' : '→'}{' '}
+                          {forecast.trend}
+                        </span>
+                        <span className="text-xs text-gray-500">
+                          {Math.round(forecast.confidence * 100)}% confidence
+                        </span>
+                      </div>
                     </div>
                   </div>
                 </div>
-              </div>
-            ))}
+              ))}
           </div>
         </div>
 

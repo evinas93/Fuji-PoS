@@ -4,7 +4,8 @@ import { useCurrentUser } from '../../hooks/useAuth';
 import { usePermissions, type Permission } from '../../lib/permissions';
 
 interface PermissionGuardProps {
-  permission: Permission | Permission[];
+  permission?: Permission | Permission[];
+  allowedRoles?: string[];
   children: React.ReactNode;
   fallback?: React.ReactNode;
   requireAll?: boolean; // If true, requires ALL permissions, otherwise requires ANY
@@ -12,6 +13,7 @@ interface PermissionGuardProps {
 
 export const PermissionGuard: React.FC<PermissionGuardProps> = ({
   permission,
+  allowedRoles,
   children,
   fallback = null,
   requireAll = false,
@@ -23,14 +25,25 @@ export const PermissionGuard: React.FC<PermissionGuardProps> = ({
     return <>{fallback}</>;
   }
 
-  const requiredPermissions = Array.isArray(permission) ? permission : [permission];
-  
-  const hasAccess = requireAll
-    ? permissions.hasAllPermissions(requiredPermissions)
-    : permissions.hasAnyPermission(requiredPermissions);
+  // Check role-based access if allowedRoles is provided
+  if (allowedRoles && allowedRoles.length > 0) {
+    const hasRoleAccess = allowedRoles.includes(currentUser.profile.role);
+    if (!hasRoleAccess) {
+      return <>{fallback}</>;
+    }
+  }
 
-  if (!hasAccess) {
-    return <>{fallback}</>;
+  // Check permission-based access if permission is provided
+  if (permission) {
+    const requiredPermissions = Array.isArray(permission) ? permission : [permission];
+
+    const hasAccess = requireAll
+      ? permissions.hasAllPermissions(requiredPermissions)
+      : permissions.hasAnyPermission(requiredPermissions);
+
+    if (!hasAccess) {
+      return <>{fallback}</>;
+    }
   }
 
   return <>{children}</>;
@@ -46,11 +59,11 @@ export const AdminOnly: React.FC<{ children: React.ReactNode; fallback?: React.R
   </PermissionGuard>
 );
 
-export const ManagerOrAdmin: React.FC<{ children: React.ReactNode; fallback?: React.ReactNode }> = ({
-  children,
-  fallback = null,
-}) => (
-  <PermissionGuard permission={["users.manage_roles", "menu.create"]} fallback={fallback}>
+export const ManagerOrAdmin: React.FC<{
+  children: React.ReactNode;
+  fallback?: React.ReactNode;
+}> = ({ children, fallback = null }) => (
+  <PermissionGuard permission={['users.manage_roles', 'menu.create']} fallback={fallback}>
     {children}
   </PermissionGuard>
 );

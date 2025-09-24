@@ -1,6 +1,11 @@
 import React, { useState } from 'react';
 import { useRouter } from 'next/router';
-import { useOrder, useUpdateOrderStatus, useSendToKitchen, useCancelOrder } from '../../hooks/useOrders';
+import {
+  useOrder,
+  useUpdateOrderStatus,
+  useSendToKitchen,
+  useCancelOrder,
+} from '../../hooks/useOrders';
 import { useAuth } from '../../hooks/useAuth';
 import { Button } from '../../components/ui/Button';
 import { Layout } from '../../components/layout/Layout';
@@ -43,10 +48,10 @@ export default function OrderDetailPage() {
     return (
       <Layout>
         <div className="text-center py-8">
-          <p className="text-red-600 mb-4">Error loading order: {error?.message || 'Order not found'}</p>
-          <Button onClick={() => router.back()}>
-            Go Back
-          </Button>
+          <p className="text-red-600 mb-4">
+            Error loading order: {error?.message || 'Order not found'}
+          </p>
+          <Button onClick={() => router.back()}>Go Back</Button>
         </div>
       </Layout>
     );
@@ -65,7 +70,7 @@ export default function OrderDetailPage() {
       await updateOrderStatus.mutateAsync({
         orderId: order.id,
         status: status as any,
-        options: status === 'completed' ? { completed_by: user?.id } : {}
+        options: status === 'completed' ? { completed_by: user?.id } : {},
       });
     } catch (error) {
       console.error('Error updating status:', error);
@@ -79,7 +84,7 @@ export default function OrderDetailPage() {
       await cancelOrder.mutateAsync({
         orderId: order.id,
         reason: cancelReason,
-        cancelledBy: user?.id || ''
+        cancelledBy: user?.id || '',
       });
       setShowCancelModal(false);
       setCancelReason('');
@@ -115,17 +120,32 @@ export default function OrderDetailPage() {
     if (order.order_type === 'take_out') {
       return order.customer_name ? `Customer: ${order.customer_name}` : 'Take Out';
     }
-    
+
     if (order.restaurant_tables) {
       return `Table ${order.restaurant_tables.table_number}`;
     }
-    
+
     return 'No table assigned';
   };
 
   const canSendToKitchen = order.status === 'pending' && order.order_items?.length > 0;
   const canMarkReady = order.status === 'preparing';
   const canMarkCompleted = order.status === 'ready';
+  const [isCalculating, setIsCalculating] = useState(false);
+
+  const handleCalculateAndReceipt = async () => {
+    try {
+      setIsCalculating(true);
+      await fetch(`/api/orders/${order.id}/calculate`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ tax_rate: 0.08 }), // adjust if needed
+      });
+      window.open(`/api/orders/${order.id}/receipt`, '_blank');
+    } finally {
+      setIsCalculating(false);
+    }
+  };
 
   return (
     <Layout>
@@ -140,14 +160,19 @@ export default function OrderDetailPage() {
                 className="flex items-center gap-2"
               >
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M15 19l-7-7 7-7"
+                  />
                 </svg>
                 Back
               </Button>
-              <h1 className="text-2xl font-bold text-gray-900">
-                Order #{order.order_number}
-              </h1>
-              <span className={`px-3 py-1 rounded-full text-sm font-medium ${getStatusColor(order.status)}`}>
+              <h1 className="text-2xl font-bold text-gray-900">Order #{order.order_number}</h1>
+              <span
+                className={`px-3 py-1 rounded-full text-sm font-medium ${getStatusColor(order.status)}`}
+              >
                 {order.status.charAt(0).toUpperCase() + order.status.slice(1)}
               </span>
             </div>
@@ -158,12 +183,19 @@ export default function OrderDetailPage() {
 
           {/* Action Buttons */}
           <div className="flex gap-2">
+            <PermissionGuard allowedRoles={['server', 'manager', 'cashier']}>
+              <Button
+                variant="primary"
+                onClick={handleCalculateAndReceipt}
+                disabled={isCalculating}
+              >
+                {isCalculating ? 'Calculating...' : 'Calculate & Generate Receipt'}
+              </Button>
+            </PermissionGuard>
+
             {(order.status === 'pending' || order.status === 'confirmed') && (
               <PermissionGuard allowedRoles={['server', 'manager']}>
-                <Button
-                  variant="secondary"
-                  onClick={() => setShowModifyModal(true)}
-                >
+                <Button variant="secondary" onClick={() => setShowModifyModal(true)}>
                   Modify Order
                 </Button>
               </PermissionGuard>
@@ -171,10 +203,7 @@ export default function OrderDetailPage() {
 
             {order.status === 'pending' && (
               <PermissionGuard allowedRoles={['server', 'manager']}>
-                <Button
-                  variant="secondary"
-                  onClick={() => setShowTransferModal(true)}
-                >
+                <Button variant="secondary" onClick={() => setShowTransferModal(true)}>
                   Transfer Order
                 </Button>
               </PermissionGuard>
@@ -182,10 +211,7 @@ export default function OrderDetailPage() {
 
             {order.status === 'pending' && order.order_items && order.order_items.length > 1 && (
               <PermissionGuard allowedRoles={['server', 'manager']}>
-                <Button
-                  variant="secondary"
-                  onClick={() => setShowSplitModal(true)}
-                >
+                <Button variant="secondary" onClick={() => setShowSplitModal(true)}>
                   Split Order
                 </Button>
               </PermissionGuard>
@@ -229,10 +255,7 @@ export default function OrderDetailPage() {
 
             {order.status !== 'completed' && order.status !== 'cancelled' && (
               <PermissionGuard allowedRoles={['manager']}>
-                <Button
-                  variant="danger"
-                  onClick={() => setShowCancelModal(true)}
-                >
+                <Button variant="danger" onClick={() => setShowCancelModal(true)}>
                   Cancel Order
                 </Button>
               </PermissionGuard>
@@ -245,7 +268,7 @@ export default function OrderDetailPage() {
           <div className="lg:col-span-2 space-y-6">
             <div className="bg-white rounded-lg border border-gray-200 p-6">
               <h2 className="text-lg font-semibold text-gray-900 mb-4">Order Details</h2>
-              
+
               <div className="grid grid-cols-2 gap-4 mb-6">
                 <div>
                   <label className="text-sm font-medium text-gray-700">Order Type</label>
@@ -272,9 +295,7 @@ export default function OrderDetailPage() {
               {order.notes && (
                 <div className="mb-6">
                   <label className="text-sm font-medium text-gray-700">Order Notes</label>
-                  <p className="text-sm text-gray-900 bg-gray-50 p-3 rounded-md">
-                    {order.notes}
-                  </p>
+                  <p className="text-sm text-gray-900 bg-gray-50 p-3 rounded-md">{order.notes}</p>
                 </div>
               )}
 
@@ -297,7 +318,7 @@ export default function OrderDetailPage() {
           <div className="lg:col-span-1">
             <div className="bg-white rounded-lg border border-gray-200 p-6">
               <h2 className="text-lg font-semibold text-gray-900 mb-4">Order Summary</h2>
-              
+
               <div className="space-y-2 mb-4">
                 <div className="flex justify-between text-sm">
                   <span>Subtotal:</span>
@@ -409,10 +430,7 @@ export default function OrderDetailPage() {
               />
             </div>
             <div className="flex justify-end gap-2">
-              <Button
-                variant="secondary"
-                onClick={() => setShowCancelModal(false)}
-              >
+              <Button variant="secondary" onClick={() => setShowCancelModal(false)}>
                 Cancel
               </Button>
               <Button
@@ -456,7 +474,9 @@ function OrderItemCard({ item }: { item: any }) {
           <h4 className="font-medium text-gray-900">{item.item_name}</h4>
           <p className="text-sm text-gray-600">Quantity: {item.quantity}</p>
         </div>
-        <span className={`px-2 py-1 rounded-full text-xs font-medium ${getItemStatusColor(item.status)}`}>
+        <span
+          className={`px-2 py-1 rounded-full text-xs font-medium ${getItemStatusColor(item.status)}`}
+        >
           {item.status.charAt(0).toUpperCase() + item.status.slice(1)}
         </span>
       </div>
@@ -483,12 +503,8 @@ function OrderItemCard({ item }: { item: any }) {
       )}
 
       <div className="flex justify-between items-center">
-        <div className="text-sm text-gray-600">
-          Unit Price: ${item.unit_price.toFixed(2)}
-        </div>
-        <div className="font-semibold text-gray-900">
-          ${item.total_price.toFixed(2)}
-        </div>
+        <div className="text-sm text-gray-600">Unit Price: ${item.unit_price.toFixed(2)}</div>
+        <div className="font-semibold text-gray-900">${item.total_price.toFixed(2)}</div>
       </div>
     </div>
   );

@@ -19,7 +19,7 @@ export const MenuItemForm: React.FC<MenuItemFormProps> = ({
   modifiers,
   onSubmit,
   onCancel,
-  isLoading = false
+  isLoading = false,
 }) => {
   const [formData, setFormData] = useState({
     name: item?.name || '',
@@ -39,7 +39,7 @@ export const MenuItemForm: React.FC<MenuItemFormProps> = ({
     is_gluten_free: item?.is_gluten_free || false,
     is_featured: item?.is_featured || false,
     allergens: item?.allergens ? (item.allergens as string[]).join(', ') : '',
-    selectedModifiers: [] as string[]
+    selectedModifiers: [] as string[],
   });
 
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -64,7 +64,7 @@ export const MenuItemForm: React.FC<MenuItemFormProps> = ({
         is_gluten_free: item.is_gluten_free || false,
         is_featured: item.is_featured || false,
         allergens: item.allergens ? (item.allergens as string[]).join(', ') : '',
-        selectedModifiers: []
+        selectedModifiers: [],
       });
     }
   }, [item]);
@@ -88,7 +88,7 @@ export const MenuItemForm: React.FC<MenuItemFormProps> = ({
       newErrors.preparation_time = 'Preparation time must be greater than 0';
     }
 
-    if (formData.calories && (formData.calories < 0 || formData.calories > 9999)) {
+    if (formData.calories && (Number(formData.calories) < 0 || Number(formData.calories) > 9999)) {
       newErrors.calories = 'Calories must be between 0 and 9999';
     }
 
@@ -98,7 +98,7 @@ export const MenuItemForm: React.FC<MenuItemFormProps> = ({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!validateForm()) {
       return;
     }
@@ -114,42 +114,46 @@ export const MenuItemForm: React.FC<MenuItemFormProps> = ({
       preparation_time: parseInt(formData.preparation_time.toString()),
       calories: formData.calories ? parseInt(formData.calories.toString()) : null,
       spicy_level: parseInt(formData.spicy_level.toString()),
-      allergens: formData.allergens ? formData.allergens.split(',').map(a => a.trim()).filter(a => a) : []
+      allergens: formData.allergens
+        ? formData.allergens
+            .split(',')
+            .map((a) => a.trim())
+            .filter((a) => a)
+        : [],
     };
 
     await onSubmit(submitData);
   };
 
   const handleInputChange = (field: string, value: any) => {
-    setFormData(prev => ({ ...prev, [field]: value }));
+    setFormData((prev) => ({ ...prev, [field]: value }));
     // Clear error when user starts typing
     if (errors[field]) {
-      setErrors(prev => ({ ...prev, [field]: '' }));
+      setErrors((prev) => ({ ...prev, [field]: '' }));
     }
   };
 
-  const groupedModifiers = modifiers.reduce((acc, modifier) => {
-    const group = modifier.modifier_group || 'other';
-    if (!acc[group]) {
-      acc[group] = [];
-    }
-    acc[group].push(modifier);
-    return acc;
-  }, {} as Record<string, Modifier[]>);
+  const groupedModifiers = modifiers.reduce(
+    (acc, modifier) => {
+      const group = modifier.modifier_group || 'other';
+      if (!acc[group]) {
+        acc[group] = [];
+      }
+      acc[group].push(modifier);
+      return acc;
+    },
+    {} as Record<string, Modifier[]>
+  );
 
   return (
     <div className="max-w-4xl mx-auto p-6 bg-white rounded-lg shadow-lg">
-      <h2 className="text-2xl font-bold mb-6">
-        {item ? 'Edit Menu Item' : 'Add New Menu Item'}
-      </h2>
+      <h2 className="text-2xl font-bold mb-6">{item ? 'Edit Menu Item' : 'Add New Menu Item'}</h2>
 
       <form onSubmit={handleSubmit} className="space-y-6">
         {/* Basic Information */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Item Name *
-            </label>
+            <label className="block text-sm font-medium text-gray-700 mb-2">Item Name *</label>
             <Input
               type="text"
               value={formData.name}
@@ -161,9 +165,7 @@ export const MenuItemForm: React.FC<MenuItemFormProps> = ({
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Category *
-            </label>
+            <label className="block text-sm font-medium text-gray-700 mb-2">Category *</label>
             <select
               value={formData.category_id}
               onChange={(e) => handleInputChange('category_id', e.target.value)}
@@ -178,15 +180,15 @@ export const MenuItemForm: React.FC<MenuItemFormProps> = ({
                 </option>
               ))}
             </select>
-            {errors.category_id && <p className="text-red-500 text-sm mt-1">{errors.category_id}</p>}
+            {errors.category_id && (
+              <p className="text-red-500 text-sm mt-1">{errors.category_id}</p>
+            )}
           </div>
         </div>
 
         {/* Description */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
-            Description
-          </label>
+          <label className="block text-sm font-medium text-gray-700 mb-2">Description</label>
           <textarea
             value={formData.description}
             onChange={(e) => handleInputChange('description', e.target.value)}
@@ -199,9 +201,7 @@ export const MenuItemForm: React.FC<MenuItemFormProps> = ({
         {/* Pricing */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Base Price *
-            </label>
+            <label className="block text-sm font-medium text-gray-700 mb-2">Base Price *</label>
             <Input
               type="number"
               step="0.01"
@@ -215,9 +215,7 @@ export const MenuItemForm: React.FC<MenuItemFormProps> = ({
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Glass Price
-            </label>
+            <label className="block text-sm font-medium text-gray-700 mb-2">Glass Price</label>
             <Input
               type="number"
               step="0.01"
@@ -229,9 +227,7 @@ export const MenuItemForm: React.FC<MenuItemFormProps> = ({
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Bottle Price
-            </label>
+            <label className="block text-sm font-medium text-gray-700 mb-2">Bottle Price</label>
             <Input
               type="number"
               step="0.01"
@@ -243,9 +239,7 @@ export const MenuItemForm: React.FC<MenuItemFormProps> = ({
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Cost
-            </label>
+            <label className="block text-sm font-medium text-gray-700 mb-2">Cost</label>
             <Input
               type="number"
               step="0.01"
@@ -260,9 +254,7 @@ export const MenuItemForm: React.FC<MenuItemFormProps> = ({
         {/* Additional Pricing */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Lunch Price
-            </label>
+            <label className="block text-sm font-medium text-gray-700 mb-2">Lunch Price</label>
             <Input
               type="number"
               step="0.01"
@@ -274,9 +266,7 @@ export const MenuItemForm: React.FC<MenuItemFormProps> = ({
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Dinner Price
-            </label>
+            <label className="block text-sm font-medium text-gray-700 mb-2">Dinner Price</label>
             <Input
               type="number"
               step="0.01"
@@ -301,13 +291,13 @@ export const MenuItemForm: React.FC<MenuItemFormProps> = ({
               onChange={(e) => handleInputChange('preparation_time', e.target.value)}
               className={errors.preparation_time ? 'border-red-500' : ''}
             />
-            {errors.preparation_time && <p className="text-red-500 text-sm mt-1">{errors.preparation_time}</p>}
+            {errors.preparation_time && (
+              <p className="text-red-500 text-sm mt-1">{errors.preparation_time}</p>
+            )}
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Calories
-            </label>
+            <label className="block text-sm font-medium text-gray-700 mb-2">Calories</label>
             <Input
               type="number"
               min="0"
@@ -328,7 +318,7 @@ export const MenuItemForm: React.FC<MenuItemFormProps> = ({
               onChange={(e) => handleInputChange('spicy_level', parseInt(e.target.value))}
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
             >
-              {[0, 1, 2, 3, 4, 5].map(level => (
+              {[0, 1, 2, 3, 4, 5].map((level) => (
                 <option key={level} value={level}>
                   {level === 0 ? 'Mild' : '🌶️'.repeat(level)}
                 </option>
@@ -413,9 +403,15 @@ export const MenuItemForm: React.FC<MenuItemFormProps> = ({
                           checked={formData.selectedModifiers.includes(modifier.id)}
                           onChange={(e) => {
                             if (e.target.checked) {
-                              handleInputChange('selectedModifiers', [...formData.selectedModifiers, modifier.id]);
+                              handleInputChange('selectedModifiers', [
+                                ...formData.selectedModifiers,
+                                modifier.id,
+                              ]);
                             } else {
-                              handleInputChange('selectedModifiers', formData.selectedModifiers.filter(id => id !== modifier.id));
+                              handleInputChange(
+                                'selectedModifiers',
+                                formData.selectedModifiers.filter((id) => id !== modifier.id)
+                              );
                             }
                           }}
                           className="mr-2"
@@ -444,7 +440,7 @@ export const MenuItemForm: React.FC<MenuItemFormProps> = ({
             disabled={isLoading}
             className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded disabled:opacity-50"
           >
-            {isLoading ? 'Saving...' : (item ? 'Update Item' : 'Create Item')}
+            {isLoading ? 'Saving...' : item ? 'Update Item' : 'Create Item'}
           </Button>
         </div>
       </form>

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useCreateOrder, useAddOrderItems } from '../../hooks/useOrders';
-import { useMenu } from '../../hooks/useMenu';
+import { useMenu, useMenuCategories } from '../../hooks/useMenu';
 import { useAuth } from '../../hooks/useAuth';
 import type { OrderType, MenuItem } from '../../types/database';
 import { Button } from '../ui/Button';
@@ -22,9 +22,14 @@ interface CartItem {
   special_instructions?: string;
 }
 
-export default function OrderCreationForm({ isOpen, onClose, onOrderCreated }: OrderCreationFormProps) {
+export default function OrderCreationForm({
+  isOpen,
+  onClose,
+  onOrderCreated,
+}: OrderCreationFormProps) {
   const { user } = useAuth();
   const { data: menuItems, isLoading: menuLoading } = useMenu();
+  const { data: categories, isLoading: categoriesLoading } = useMenuCategories();
   const createOrder = useCreateOrder();
   const addOrderItems = useAddOrderItems();
 
@@ -35,13 +40,13 @@ export default function OrderCreationForm({ isOpen, onClose, onOrderCreated }: O
   const [customerPhone, setCustomerPhone] = useState<string>('');
   const [notes, setNotes] = useState<string>('');
   const [cart, setCart] = useState<CartItem[]>([]);
-  const [selectedCategory, setSelectedCategory] = useState<string>('');
+  const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
 
   // Calculate totals
   const subtotal = cart.reduce((sum, item) => {
-    const menuItem = menuItems?.find(mi => mi.id === item.item_id);
+    const menuItem = menuItems?.find((mi) => mi.id === item.item_id);
     if (!menuItem) return sum;
-    
+
     const basePrice = menuItem.base_price;
     const modifierCost = item.modifiers.reduce((modSum, mod) => modSum + mod.price, 0);
     const itemTotal = (basePrice + modifierCost) * item.quantity;
@@ -61,43 +66,42 @@ export default function OrderCreationForm({ isOpen, onClose, onOrderCreated }: O
       setCustomerPhone('');
       setNotes('');
       setCart([]);
-      setSelectedCategory('');
+      setSelectedCategory(null);
     }
   }, [isOpen]);
 
   const handleAddToCart = (menuItem: MenuItem) => {
-    const existingItem = cart.find(item => item.item_id === menuItem.id);
-    
+    const existingItem = cart.find((item) => item.item_id === menuItem.id);
+
     if (existingItem) {
-      setCart(cart.map(item => 
-        item.item_id === menuItem.id 
-          ? { ...item, quantity: item.quantity + 1 }
-          : item
-      ));
+      setCart(
+        cart.map((item) =>
+          item.item_id === menuItem.id ? { ...item, quantity: item.quantity + 1 } : item
+        )
+      );
     } else {
-      setCart([...cart, {
-        item_id: menuItem.id,
-        quantity: 1,
-        modifiers: [],
-        special_instructions: ''
-      }]);
+      setCart([
+        ...cart,
+        {
+          item_id: menuItem.id,
+          quantity: 1,
+          modifiers: [],
+          special_instructions: '',
+        },
+      ]);
     }
   };
 
   const handleUpdateQuantity = (itemId: string, quantity: number) => {
     if (quantity <= 0) {
-      setCart(cart.filter(item => item.item_id !== itemId));
+      setCart(cart.filter((item) => item.item_id !== itemId));
     } else {
-      setCart(cart.map(item => 
-        item.item_id === itemId 
-          ? { ...item, quantity }
-          : item
-      ));
+      setCart(cart.map((item) => (item.item_id === itemId ? { ...item, quantity } : item)));
     }
   };
 
   const handleRemoveFromCart = (itemId: string) => {
-    setCart(cart.filter(item => item.item_id !== itemId));
+    setCart(cart.filter((item) => item.item_id !== itemId));
   };
 
   const handleCreateOrder = async () => {
@@ -111,7 +115,7 @@ export default function OrderCreationForm({ isOpen, onClose, onOrderCreated }: O
         customer_name: customerName || undefined,
         customer_phone: customerPhone || undefined,
         server_id: user.id,
-        notes: notes || undefined
+        notes: notes || undefined,
       });
 
       if (orderError) throw orderError;
@@ -120,7 +124,7 @@ export default function OrderCreationForm({ isOpen, onClose, onOrderCreated }: O
       if (cart.length > 0) {
         const { error: itemsError } = await addOrderItems.mutateAsync({
           orderId: order.id,
-          items: cart
+          items: cart,
         });
 
         if (itemsError) throw itemsError;
@@ -135,16 +139,16 @@ export default function OrderCreationForm({ isOpen, onClose, onOrderCreated }: O
     }
   };
 
-  const filteredMenuItems = menuItems?.filter(item => 
-    !selectedCategory || item.category_id === selectedCategory
-  ) || [];
+  const filteredMenuItems =
+    menuItems?.filter((item) => !selectedCategory || item.category_id === selectedCategory) || [];
 
   return (
     <Modal isOpen={isOpen} onClose={onClose} title="Create New Order" size="xl">
-      <div className="flex h-[600px]">
+      <div className="flex h-[700px]">
         {/* Left Panel - Menu Selection */}
-        <div className="flex-1 border-r border-gray-200 pr-4">
-          <div className="mb-4">
+        <div className="flex-1 border-r border-gray-200 pr-4 flex flex-col">
+          {/* Order Type and Customer Info - Fixed Header */}
+          <div className="flex-shrink-0 mb-4">
             <div className="flex gap-2 mb-4">
               <Button
                 variant={orderType === 'dine_in' ? 'primary' : 'secondary'}
@@ -189,44 +193,65 @@ export default function OrderCreationForm({ isOpen, onClose, onOrderCreated }: O
             />
           </div>
 
-          <MenuCategoryTabs
-            selectedCategory={selectedCategory}
-            onCategoryChange={setSelectedCategory}
-            className="mb-4"
-          />
+          {/* Category Tabs - Fixed */}
+          <div className="flex-shrink-0 mb-4">
+            <MenuCategoryTabs
+              categories={categories || []}
+              activeCategory={selectedCategory}
+              onCategoryChange={setSelectedCategory}
+              showAllOption={true}
+            />
+          </div>
 
-          <div className="h-96 overflow-y-auto">
-            {menuLoading ? (
+          {/* Menu Items - Scrollable Area */}
+          <div className="flex-1 overflow-y-auto border border-gray-200 rounded-lg custom-scrollbar">
+            {menuLoading || categoriesLoading ? (
               <div className="text-center py-8">Loading menu...</div>
             ) : (
-              <div className="grid grid-cols-1 gap-2">
-                {filteredMenuItems.map((item) => (
-                  <MenuItemCard
-                    key={item.id}
-                    item={item}
-                    onAddToCart={() => handleAddToCart(item)}
-                    showAddButton={true}
-                    compact={true}
-                  />
-                ))}
+              <div className="p-3 space-y-2" style={{ minHeight: '500px' }}>
+                {filteredMenuItems.length === 0 ? (
+                  <div className="text-center py-8 text-gray-500">
+                    No items found in this category
+                  </div>
+                ) : (
+                  <>
+                    {filteredMenuItems.map((item) => (
+                      <MenuItemCard
+                        key={item.id}
+                        item={item}
+                        onAddToCart={() => handleAddToCart(item)}
+                        showAddButton={true}
+                        compact={true}
+                      />
+                    ))}
+                    {/* Add some extra content to ensure scrolling */}
+                    <div className="h-20 bg-gray-50 rounded-lg flex items-center justify-center text-gray-500 text-sm">
+                      Scroll to see more items
+                    </div>
+                    <div className="h-20 bg-gray-50 rounded-lg flex items-center justify-center text-gray-500 text-sm">
+                      More items below
+                    </div>
+                    <div className="h-20 bg-gray-50 rounded-lg flex items-center justify-center text-gray-500 text-sm">
+                      Keep scrolling
+                    </div>
+                  </>
+                )}
               </div>
             )}
           </div>
         </div>
 
         {/* Right Panel - Cart and Totals */}
-        <div className="w-80 pl-4">
-          <h3 className="text-lg font-semibold mb-4">Order Items</h3>
-          
-          <div className="h-80 overflow-y-auto mb-4">
+        <div className="w-80 pl-4 flex flex-col">
+          <h3 className="text-lg font-semibold mb-4 flex-shrink-0">Order Items</h3>
+
+          <div className="flex-1 overflow-y-auto mb-4 border border-gray-200 rounded-lg custom-scrollbar">
             {cart.length === 0 ? (
-              <div className="text-center text-gray-500 py-8">
-                No items in cart
-              </div>
+              <div className="text-center text-gray-500 py-8">No items in cart</div>
             ) : (
-              <div className="space-y-2">
+              <div className="p-3 space-y-2 min-h-full">
                 {cart.map((cartItem) => {
-                  const menuItem = menuItems?.find(mi => mi.id === cartItem.item_id);
+                  const menuItem = menuItems?.find((mi) => mi.id === cartItem.item_id);
                   if (!menuItem) return null;
 
                   return (
@@ -236,7 +261,7 @@ export default function OrderCreationForm({ isOpen, onClose, onOrderCreated }: O
                           <h4 className="font-medium text-sm">{menuItem.name}</h4>
                           {cartItem.modifiers.length > 0 && (
                             <div className="text-xs text-gray-600 mt-1">
-                              {cartItem.modifiers.map(mod => mod.name).join(', ')}
+                              {cartItem.modifiers.map((mod) => mod.name).join(', ')}
                             </div>
                           )}
                         </div>
@@ -247,11 +272,13 @@ export default function OrderCreationForm({ isOpen, onClose, onOrderCreated }: O
                           ×
                         </button>
                       </div>
-                      
+
                       <div className="flex items-center justify-between">
                         <div className="flex items-center gap-2">
                           <button
-                            onClick={() => handleUpdateQuantity(cartItem.item_id, cartItem.quantity - 1)}
+                            onClick={() =>
+                              handleUpdateQuantity(cartItem.item_id, cartItem.quantity - 1)
+                            }
                             className="w-6 h-6 rounded-full border border-gray-300 flex items-center justify-center text-sm hover:bg-gray-50"
                           >
                             -
@@ -260,15 +287,22 @@ export default function OrderCreationForm({ isOpen, onClose, onOrderCreated }: O
                             {cartItem.quantity}
                           </span>
                           <button
-                            onClick={() => handleUpdateQuantity(cartItem.item_id, cartItem.quantity + 1)}
+                            onClick={() =>
+                              handleUpdateQuantity(cartItem.item_id, cartItem.quantity + 1)
+                            }
                             className="w-6 h-6 rounded-full border border-gray-300 flex items-center justify-center text-sm hover:bg-gray-50"
                           >
                             +
                           </button>
                         </div>
-                        
+
                         <div className="text-sm font-medium">
-                          ${((menuItem.base_price + cartItem.modifiers.reduce((sum, mod) => sum + mod.price, 0)) * cartItem.quantity).toFixed(2)}
+                          $
+                          {(
+                            (menuItem.base_price +
+                              cartItem.modifiers.reduce((sum, mod) => sum + mod.price, 0)) *
+                            cartItem.quantity
+                          ).toFixed(2)}
                         </div>
                       </div>
                     </div>
@@ -278,11 +312,9 @@ export default function OrderCreationForm({ isOpen, onClose, onOrderCreated }: O
             )}
           </div>
 
-          {/* Order Notes */}
-          <div className="mb-4">
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Order Notes
-            </label>
+          {/* Order Notes - Fixed */}
+          <div className="flex-shrink-0 mb-4">
+            <label className="block text-sm font-medium text-gray-700 mb-1">Order Notes</label>
             <textarea
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
@@ -292,8 +324,8 @@ export default function OrderCreationForm({ isOpen, onClose, onOrderCreated }: O
             />
           </div>
 
-          {/* Totals */}
-          <div className="border-t pt-4 mb-4">
+          {/* Totals - Fixed */}
+          <div className="flex-shrink-0 border-t pt-4 mb-4">
             <div className="flex justify-between text-sm mb-1">
               <span>Subtotal:</span>
               <span>${subtotal.toFixed(2)}</span>
@@ -308,13 +340,9 @@ export default function OrderCreationForm({ isOpen, onClose, onOrderCreated }: O
             </div>
           </div>
 
-          {/* Action Buttons */}
-          <div className="flex gap-2">
-            <Button
-              variant="secondary"
-              onClick={onClose}
-              className="flex-1"
-            >
+          {/* Action Buttons - Fixed */}
+          <div className="flex-shrink-0 flex gap-2">
+            <Button variant="secondary" onClick={onClose} className="flex-1">
               Cancel
             </Button>
             <Button
@@ -331,4 +359,3 @@ export default function OrderCreationForm({ isOpen, onClose, onOrderCreated }: O
     </Modal>
   );
 }
-

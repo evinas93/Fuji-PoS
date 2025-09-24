@@ -8,10 +8,46 @@ import KitchenNotifications from '../../components/orders/KitchenNotifications';
 import PreparationTimeEstimator from '../../components/orders/PreparationTimeEstimator';
 
 export default function KitchenPage() {
-  const { user } = useAuth();
+  const { user, isLoading: authLoading, isAuthenticated } = useAuth();
   const { data: kitchenQueue, isLoading, error } = useKitchenQueue();
   const updateItemStatus = useUpdateItemStatus();
   const [filter, setFilter] = useState<'all' | 'confirmed' | 'preparing'>('all');
+
+  // Debug logging
+  console.log('Kitchen Page Debug:', {
+    user,
+    isAuthenticated,
+    authLoading,
+    kitchenQueue,
+    isLoading,
+    error,
+  });
+
+  // Show loading while checking authentication
+  if (authLoading) {
+    return (
+      <Layout>
+        <div className="flex items-center justify-center h-64">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
+            <p>Loading...</p>
+          </div>
+        </div>
+      </Layout>
+    );
+  }
+
+  // Redirect to login if not authenticated
+  if (!isAuthenticated) {
+    return (
+      <Layout>
+        <div className="text-center py-8">
+          <p className="text-red-600 mb-4">You must be logged in to access the kitchen display.</p>
+          <Button onClick={() => (window.location.href = '/auth/login')}>Go to Login</Button>
+        </div>
+      </Layout>
+    );
+  }
 
   if (isLoading) {
     return (
@@ -31,23 +67,20 @@ export default function KitchenPage() {
       <Layout>
         <div className="text-center py-8">
           <p className="text-red-600 mb-4">Error loading kitchen queue: {error.message}</p>
-          <Button onClick={() => window.location.reload()}>
-            Try Again
-          </Button>
+          <Button onClick={() => window.location.reload()}>Try Again</Button>
         </div>
       </Layout>
     );
   }
 
-  const filteredItems = kitchenQueue?.filter(item => 
-    filter === 'all' || item.status === filter
-  ) || [];
+  const filteredItems =
+    kitchenQueue?.filter((item) => filter === 'all' || item.status === filter) || [];
 
   const handleUpdateItemStatus = async (itemId: string, status: string) => {
     try {
       await updateItemStatus.mutateAsync({
         itemId,
-        status: status as any
+        status: status as any,
       });
     } catch (error) {
       console.error('Error updating item status:', error);
@@ -75,31 +108,31 @@ export default function KitchenPage() {
     if (order.order_type === 'take_out') {
       return order.customer_name ? `Customer: ${order.customer_name}` : 'Take Out';
     }
-    
+
     if (order.restaurant_tables) {
       return `Table ${order.restaurant_tables.table_number}`;
     }
-    
+
     return 'No table assigned';
   };
 
   const getPreparationTime = (item: any) => {
-    const prepTime = Array.isArray(item.menu_items) 
-      ? item.menu_items[0]?.preparation_time 
+    const prepTime = Array.isArray(item.menu_items)
+      ? item.menu_items[0]?.preparation_time
       : item.menu_items?.preparation_time;
     return prepTime || 15; // Default 15 minutes
   };
 
   const getSpicyLevel = (item: any) => {
-    const spicyLevel = Array.isArray(item.menu_items) 
-      ? item.menu_items[0]?.spicy_level 
+    const spicyLevel = Array.isArray(item.menu_items)
+      ? item.menu_items[0]?.spicy_level
       : item.menu_items?.spicy_level;
     return spicyLevel || 0;
   };
 
   const getAllergens = (item: any) => {
-    const allergens = Array.isArray(item.menu_items) 
-      ? item.menu_items[0]?.allergens 
+    const allergens = Array.isArray(item.menu_items)
+      ? item.menu_items[0]?.allergens
       : item.menu_items?.allergens;
     return allergens || [];
   };
@@ -114,7 +147,7 @@ export default function KitchenPage() {
               <h1 className="text-2xl font-bold text-gray-900">Kitchen Display</h1>
               <p className="text-gray-600">Manage food preparation and order status</p>
             </div>
-            
+
             <div className="flex gap-2">
               <Button
                 variant={filter === 'all' ? 'primary' : 'secondary'}
@@ -128,14 +161,15 @@ export default function KitchenPage() {
                 onClick={() => setFilter('confirmed')}
                 size="sm"
               >
-                New ({kitchenQueue?.filter(item => item.status === 'confirmed').length || 0})
+                New ({kitchenQueue?.filter((item) => item.status === 'confirmed').length || 0})
               </Button>
               <Button
                 variant={filter === 'preparing' ? 'primary' : 'secondary'}
                 onClick={() => setFilter('preparing')}
                 size="sm"
               >
-                Preparing ({kitchenQueue?.filter(item => item.status === 'preparing').length || 0})
+                Preparing ({kitchenQueue?.filter((item) => item.status === 'preparing').length || 0}
+                )
               </Button>
             </div>
           </div>
@@ -147,8 +181,18 @@ export default function KitchenPage() {
 
           {filteredItems.length === 0 ? (
             <div className="text-center py-12 bg-gray-50 rounded-lg">
-              <svg className="w-12 h-12 text-gray-400 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+              <svg
+                className="w-12 h-12 text-gray-400 mx-auto mb-4"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"
+                />
               </svg>
               <h3 className="text-lg font-medium text-gray-900 mb-2">No Items in Queue</h3>
               <p className="text-gray-600">All caught up! New orders will appear here.</p>
@@ -177,15 +221,15 @@ export default function KitchenPage() {
 }
 
 // Kitchen Item Card Component
-function KitchenItemCard({ 
-  item, 
-  onUpdateStatus, 
-  getStatusColor, 
-  formatOrderType, 
+function KitchenItemCard({
+  item,
+  onUpdateStatus,
+  getStatusColor,
+  formatOrderType,
   formatTableInfo,
   getPreparationTime,
   getSpicyLevel,
-  getAllergens
+  getAllergens,
 }: {
   item: any;
   onUpdateStatus: (itemId: string, status: string) => void;
@@ -207,17 +251,15 @@ function KitchenItemCard({
     <div className={`bg-white rounded-lg border-2 p-4 ${getStatusColor(item.status)}`}>
       <div className="flex justify-between items-start mb-3">
         <div>
-          <h3 className="font-semibold text-gray-900 text-lg">
-            {item.item_name}
-          </h3>
+          <h3 className="font-semibold text-gray-900 text-lg">{item.item_name}</h3>
           <p className="text-sm text-gray-600">
             Order #{item.orders.order_number} • {formatOrderType(item.orders.order_type)}
           </p>
-          <p className="text-sm text-gray-600">
-            {formatTableInfo(item.orders)}
-          </p>
+          <p className="text-sm text-gray-600">{formatTableInfo(item.orders)}</p>
         </div>
-        <span className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(item.status)}`}>
+        <span
+          className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(item.status)}`}
+        >
           {item.status.charAt(0).toUpperCase() + item.status.slice(1)}
         </span>
       </div>
@@ -242,9 +284,7 @@ function KitchenItemCard({
         {allergens.length > 0 && (
           <div className="text-sm">
             <span className="text-gray-600">Allergens:</span>
-            <span className="font-medium text-red-600 ml-1">
-              {allergens.join(', ')}
-            </span>
+            <span className="font-medium text-red-600 ml-1">{allergens.join(', ')}</span>
           </div>
         )}
       </div>
@@ -287,11 +327,7 @@ function KitchenItemCard({
             </Button>
           )}
           {canMarkReady && (
-            <Button
-              variant="success"
-              size="sm"
-              onClick={() => onUpdateStatus(item.id, 'ready')}
-            >
+            <Button variant="success" size="sm" onClick={() => onUpdateStatus(item.id, 'ready')}>
               Ready
             </Button>
           )}

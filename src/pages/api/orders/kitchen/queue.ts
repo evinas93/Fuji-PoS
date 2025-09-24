@@ -1,5 +1,5 @@
 import { NextApiRequest, NextApiResponse } from 'next';
-import { OrderService } from '../../../lib/services/order.service';
+import { OrderService } from '../../../../lib/services/order.service';
 
 const orderService = new OrderService();
 
@@ -21,10 +21,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     return res.status(200).json({ data });
   } catch (error) {
     console.error('Kitchen Queue API error:', error);
-    return res.status(500).json({ 
+    return res.status(500).json({
       error: 'Internal server error',
-      message: error instanceof Error ? error.message : 'Unknown error'
+      message: error instanceof Error ? error.message : 'Unknown error',
     });
   }
 }
-
