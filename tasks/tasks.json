@@ -1,0 +1,256 @@
+{
+  "master": {
+    "tasks": [
+      {
+        "id": 1,
+        "title": "Project Foundation Setup",
+        "description": "Initialize project structure, development environment, and core infrastructure for the Fuji POS system.",
+        "dependencies": [],
+        "priority": "high",
+        "status": "done",
+        "testStrategy": "Verify project structure creation, validate environment configuration, test database connectivity, confirm build processes.",
+        "subtasks": [
+          {
+            "id": 1,
+            "title": "Initialize Git Repository and Project Structure",
+            "description": "Set up version control, create directory structure, initialize package.json, configure .gitignore for Node.js/React project.",
+            "dependencies": [],
+            "status": "done",
+            "testStrategy": "Verify git initialization, validate directory structure, test package.json configuration."
+          },
+          {
+            "id": 2,
+            "title": "Setup Development Environment Configuration",
+            "description": "Configure ESLint, Prettier, environment variables template, development server configuration, and build tools.",
+            "dependencies": [1],
+            "status": "done",
+            "testStrategy": "Test linting rules, validate code formatting, verify environment variable loading, test development server startup."
+          },
+          {
+            "id": 3,
+            "title": "Database Design and Schema Creation",
+            "description": "Design PostgreSQL database schema for menu items, orders, users, daily sales with proper relationships and constraints.",
+            "dependencies": [1],
+            "status": "done",
+            "testStrategy": "Validate schema structure, test foreign key constraints, verify indexes, test sample data insertion."
+          },
+          {
+            "id": 4,
+            "title": "Backend API Framework Setup",
+            "description": "Initialize Express.js server, configure middleware, set up routing structure, database connection, error handling.",
+            "dependencies": [2, 3],
+            "status": "done",
+            "testStrategy": "Test API server startup, validate middleware functionality, test database connection, verify error handling."
+          }
+        ]
+      },
+      {
+        "id": 2,
+        "title": "User Authentication and Authorization System (Simplified)",
+        "description": "Basic user management with simplified role-based access for MVP. Complex authentication removed in favor of streamlined access.",
+        "dependencies": [1],
+        "priority": "medium",
+        "status": "done",
+        "testStrategy": "Test basic authentication, verify simplified role access.",
+        "subtasks": [
+          {
+            "id": 1,
+            "title": "Basic User Session Management",
+            "description": "Simplified session handling via Supabase auth with minimal role checks.",
+            "dependencies": [],
+            "status": "done",
+            "testStrategy": "Test session persistence, verify basic auth flow."
+          }
+        ]
+      },
+      {
+        "id": 3,
+        "title": "Menu Management System (MVP Simplified)",
+        "description": "Simplified digital menu management with basic fields: name, category, base_price, description. No modifiers or complex pricing.",
+        "dependencies": [1],
+        "priority": "critical",
+        "status": "done",
+        "testStrategy": "Test menu item CRUD operations, validate search functionality, verify category organization.",
+        "subtasks": [
+          {
+            "id": 1,
+            "title": "Menu Item Database and CRUD Operations",
+            "description": "Simplified menu_items table with basic fields, implement create/read/update/delete endpoints, category management, search functionality.",
+            "dependencies": [],
+            "status": "done",
+            "testStrategy": "Test CRUD operations, validate data persistence, verify search functionality, test category organization."
+          },
+          {
+            "id": 2,
+            "title": "Basic Price Management",
+            "description": "Single base_price field per item. Removed price variations and complex pricing structures.",
+            "dependencies": [1],
+            "status": "done",
+            "testStrategy": "Test price entry and updates, verify price display in order system."
+          }
+        ]
+      },
+      {
+        "id": 4,
+        "title": "Order Processing System (MVP Simplified)",
+        "description": "Streamlined order creation with automatic calculations. Order type (dine-in/take-out), payment method tracking, and immediate completion.",
+        "dependencies": [3],
+        "priority": "critical",
+        "status": "done",
+        "testStrategy": "Test complete order workflow, validate automatic calculations (tax, gratuity), verify order storage.",
+        "subtasks": [
+          {
+            "id": 1,
+            "title": "Simplified Order Creation",
+            "description": "SimpleOrderForm component: two-panel interface for menu selection and order summary with automatic total calculation.",
+            "dependencies": [],
+            "status": "done",
+            "testStrategy": "Test order creation, validate item selection, verify quantity updates, test calculation accuracy."
+          },
+          {
+            "id": 2,
+            "title": "Automatic Order Calculations",
+            "description": "Built-in calculation engine: Subtotal, Tax (8%), Gratuity (20% of subtotal+tax), Total. No manual adjustments.",
+            "dependencies": [1],
+            "status": "done",
+            "testStrategy": "Validate calculation formulas, test edge cases, verify totals accuracy."
+          },
+          {
+            "id": 3,
+            "title": "Order Type and Payment Method Tracking",
+            "description": "Track order_type (dine_in/take_out) and payment_method (cash/credit) for reporting purposes.",
+            "dependencies": [1],
+            "status": "done",
+            "testStrategy": "Test order type selection, verify payment method tracking, validate data for reports."
+          }
+        ]
+      },
+      {
+        "id": 5,
+        "title": "Sales Reporting and Analytics Dashboard",
+        "description": "Core reporting system with daily summaries, monthly exports, and grand totals. Replaces complex analytics with focused Excel export functionality.",
+        "dependencies": [4],
+        "priority": "critical",
+        "status": "done",
+        "testStrategy": "Test report generation, validate export formats, verify calculations match requirements.",
+        "subtasks": [
+          {
+            "id": 1,
+            "title": "Daily Sales Aggregation",
+            "description": "useDailySales hook aggregates orders by date: togo_sales, dine_in_sales, tax_collected, gross_sale, gratuity_total, net_sale, credit_total, cash_deposited.",
+            "dependencies": [],
+            "status": "done",
+            "testStrategy": "Test daily aggregation accuracy, verify breakdown by order type and payment method."
+          },
+          {
+            "id": 2,
+            "title": "Monthly Sales Aggregation",
+            "description": "useMonthlySales hook groups daily sales by month with daily breakdown and monthly totals for all metrics.",
+            "dependencies": [1],
+            "status": "done",
+            "testStrategy": "Test monthly aggregation across all days, validate totals calculation."
+          },
+          {
+            "id": 3,
+            "title": "Excel Export Service",
+            "description": "ExportService exports Month_Year_SALES.xlsx (monthly) and Grand_Totals_Sales_Summary.xlsx (all-time) using xlsx library. No $ formatting.",
+            "dependencies": [1, 2],
+            "status": "done",
+            "testStrategy": "Test Excel file generation, verify column structure, validate numeric formatting."
+          },
+          {
+            "id": 4,
+            "title": "Reports Dashboard UI",
+            "description": "Reports page with three tabs: Daily Summary, Monthly Export, Grand Totals. Clean interface for viewing and exporting data.",
+            "dependencies": [1, 2, 3],
+            "status": "done",
+            "testStrategy": "Test tab navigation, verify date selection, test export functionality."
+          }
+        ]
+      },
+      {
+        "id": 6,
+        "title": "Frontend User Interface (MVP Focused)",
+        "description": "Simplified UI with three core pages: Menu Management, New Order, Sales Reports. Touch-optimized components with clean, focused design.",
+        "dependencies": [3, 4, 5],
+        "priority": "high",
+        "status": "done",
+        "testStrategy": "Test UI responsiveness, validate touch interactions, verify navigation flow.",
+        "subtasks": [
+          {
+            "id": 1,
+            "title": "Simplified Navigation",
+            "description": "Sidebar with 3 core pages only. Removed dashboard, kitchen, analytics, payments from navigation.",
+            "dependencies": [],
+            "status": "done",
+            "testStrategy": "Test navigation between pages, verify clean interface."
+          },
+          {
+            "id": 2,
+            "title": "Menu Management Interface",
+            "description": "Simple menu CRUD interface with search and category filtering.",
+            "dependencies": [1],
+            "status": "done",
+            "testStrategy": "Test menu management workflow, validate search and filtering."
+          },
+          {
+            "id": 3,
+            "title": "Order Entry Interface",
+            "description": "Two-panel SimpleOrderForm: menu selection (left) + order summary (right) with real-time calculations.",
+            "dependencies": [1],
+            "status": "done",
+            "testStrategy": "Test order workflow, validate cart functionality, verify calculations display."
+          },
+          {
+            "id": 4,
+            "title": "Reports Dashboard Interface",
+            "description": "Three-tab reports page: Daily Summary, Monthly Export, Grand Totals with export buttons.",
+            "dependencies": [1],
+            "status": "done",
+            "testStrategy": "Test dashboard functionality, validate export buttons, verify data display."
+          }
+        ]
+      },
+      {
+        "id": 7,
+        "title": "MVP Implementation and Documentation",
+        "description": "Complete MVP pivot implementation with comprehensive documentation suite for deployment and usage.",
+        "dependencies": [1, 2, 3, 4, 5, 6],
+        "priority": "critical",
+        "status": "done",
+        "testStrategy": "Review documentation completeness, validate deployment steps, test complete workflow.",
+        "subtasks": [
+          {
+            "id": 1,
+            "title": "Database Schema Simplification",
+            "description": "Created 006_mvp_simplified_schema.sql migration ensuring core tables exist with simplified structure.",
+            "dependencies": [],
+            "status": "done",
+            "testStrategy": "Test migration execution, verify table structure, validate data persistence."
+          },
+          {
+            "id": 2,
+            "title": "Remove Unused Features",
+            "description": "Deleted AI/analytics components, real-time subscriptions, kitchen display from navigation. Archived complex features.",
+            "dependencies": [],
+            "status": "done",
+            "testStrategy": "Verify no build errors, test clean navigation, validate removed features don't appear."
+          },
+          {
+            "id": 3,
+            "title": "Documentation Suite",
+            "description": "Created README.md, QUICK_START_MVP.md, DEPLOYMENT_GUIDE.md, MVP_IMPLEMENTATION_SUMMARY.md.",
+            "dependencies": [1, 2],
+            "status": "done",
+            "testStrategy": "Review documentation accuracy, verify deployment steps, validate user guide clarity."
+          }
+        ]
+      }
+    ],
+    "metadata": {
+      "created": "2025-09-22T22:59:30.949Z",
+      "updated": "2025-01-23T00:30:00.000Z",
+      "description": "MVP-focused tasks - Cleaned up to reflect simplified sales data automation workflow"
+    }
+  }
+}

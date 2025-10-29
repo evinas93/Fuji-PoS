@@ -9,9 +9,9 @@ export default function HomePage() {
   useEffect(() => {
     if (!isLoading) {
       if (isAuthenticated) {
-        router.push('/dashboard');
+        void router.push('/menu');
       } else {
-        router.push('/auth/login');
+        void router.push('/auth/login');
       }
     }
   }, [isLoading, isAuthenticated, router]);
