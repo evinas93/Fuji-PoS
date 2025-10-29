@@ -242,23 +242,30 @@ npm run dev          # Start development server
 npm run build        # Build for production
 npm run start        # Start production server
 npm run lint         # Run ESLint
+npm run format       # Format code with Prettier
 npm run type-check   # TypeScript type checking
-npm test             # Run tests
 ```
+
+## Documentation
+
+For more detailed information, see:
+
+- **[DATABASE_SETUP_GUIDE.md](DATABASE_SETUP_GUIDE.md)** - Complete database setup and migration instructions
+- **[DEPLOYMENT_GUIDE.md](DEPLOYMENT_GUIDE.md)** - Production deployment guide
+- **[fuji-pos-prd.md](fuji-pos-prd.md)** - Product requirements document
 
 ## Simplified from Full POS
 
-This MVP is a stripped-down version focused solely on sales data automation. Features removed:
+This MVP is a streamlined version focused on core sales automation. Advanced features intentionally excluded:
 
-- Complex authentication and role-based access
+- Complex role-based access control (uses simple authentication)
 - Kitchen display system
 - Real-time order tracking
-- Advanced analytics dashboard
-- AI forecasting features
+- Advanced analytics and AI forecasting
 - Inventory management
-- Split orders and complex payment processing
-- Receipt printing
-- Customer management
+- Split payments and complex payment processing
+- Physical receipt printing
+- Customer relationship management
 
 ## Contributing
 
