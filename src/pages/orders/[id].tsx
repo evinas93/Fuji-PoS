@@ -11,6 +11,7 @@ import { Button } from '../../components/ui/Button';
 import { Layout } from '../../components/layout/Layout';
 import { PermissionGuard } from '../../components/ui/PermissionGuard';
 import { Modal } from '../../components/ui/Modal';
+import ReceiptModal from '../../components/receipts/ReceiptModal';
 import OrderTimeline from '../../components/orders/OrderTimeline';
 import OrderModificationForm from '../../components/orders/OrderModificationForm';
 import OrderTransferForm from '../../components/orders/OrderTransferForm';
@@ -30,6 +31,7 @@ export default function OrderDetailPage() {
   const [showModifyModal, setShowModifyModal] = useState(false);
   const [showTransferModal, setShowTransferModal] = useState(false);
   const [showSplitModal, setShowSplitModal] = useState(false);
+  const [showReceiptModal, setShowReceiptModal] = useState(false);
 
   if (isLoading) {
     return (
@@ -141,7 +143,8 @@ export default function OrderDetailPage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ tax_rate: 0.08 }), // adjust if needed
       });
-      window.open(`/api/orders/${order.id}/receipt`, '_blank');
+      // Open receipt modal instead of new window
+      setShowReceiptModal(true);
     } finally {
       setIsCalculating(false);
     }
@@ -186,10 +189,19 @@ export default function OrderDetailPage() {
             <PermissionGuard allowedRoles={['server', 'manager', 'cashier']}>
               <Button
                 variant="primary"
+                onClick={() => setShowReceiptModal(true)}
+              >
+                View Receipt
+              </Button>
+            </PermissionGuard>
+
+            <PermissionGuard allowedRoles={['server', 'manager', 'cashier']}>
+              <Button
+                variant="secondary"
                 onClick={handleCalculateAndReceipt}
                 disabled={isCalculating}
               >
-                {isCalculating ? 'Calculating...' : 'Calculate & Generate Receipt'}
+                {isCalculating ? 'Calculating...' : 'Print Receipt'}
               </Button>
             </PermissionGuard>
 
@@ -443,6 +455,13 @@ export default function OrderDetailPage() {
             </div>
           </div>
         </Modal>
+
+        {/* Receipt Modal */}
+        <ReceiptModal
+          isOpen={showReceiptModal}
+          onClose={() => setShowReceiptModal(false)}
+          orderId={order.id}
+        />
       </div>
     </Layout>
   );

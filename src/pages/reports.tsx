@@ -4,8 +4,9 @@ import { Layout } from '../components/layout/Layout';
 import { DailySummary } from '../components/reports/DailySummary';
 import { MonthlyExport } from '../components/reports/MonthlyExport';
 import { GrandTotalsExport } from '../components/reports/GrandTotalsExport';
+import ReceiptsDashboard from '../components/receipts/ReceiptsDashboard';
 
-type ReportTab = 'daily' | 'monthly' | 'grand';
+type ReportTab = 'daily' | 'monthly' | 'grand' | 'receipts';
 
 const ReportsPage: React.FC = () => {
   const [activeTab, setActiveTab] = useState<ReportTab>('daily');
@@ -14,6 +15,7 @@ const ReportsPage: React.FC = () => {
     { id: 'daily' as ReportTab, label: 'Daily Summary' },
     { id: 'monthly' as ReportTab, label: 'Monthly Export' },
     { id: 'grand' as ReportTab, label: 'Grand Totals' },
+    { id: 'receipts' as ReportTab, label: 'Receipts' },
   ];
 
   return (
@@ -50,6 +52,7 @@ const ReportsPage: React.FC = () => {
           {activeTab === 'daily' && <DailySummary />}
           {activeTab === 'monthly' && <MonthlyExport />}
           {activeTab === 'grand' && <GrandTotalsExport />}
+          {activeTab === 'receipts' && <ReceiptsDashboard />}
         </div>
       </div>
     </Layout>

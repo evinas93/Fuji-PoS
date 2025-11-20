@@ -7,18 +7,37 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     return res.status(405).end('Method Not Allowed');
   }
 
-  const { id } = req.query;
+  const { id, format } = req.query;
   if (!id || typeof id !== 'string') {
     return res.status(400).end('Order ID is required');
   }
+
+  const responseFormat = format === 'json' ? 'json' : 'html';
 
   try {
     const { data: order, error } = await supabase
       .from('orders')
       .select(
         `
-        *,
-        order_items (*),
+        id,
+        order_number,
+        order_date,
+        order_type,
+        table_id,
+        subtotal,
+        discount_amount,
+        tax_amount,
+        gratuity_amount,
+        service_charge,
+        total_amount,
+        created_at,
+        order_items (
+          item_name,
+          quantity,
+          unit_price,
+          total_price,
+          modifiers
+        ),
         restaurant_tables (
           table_number
         ),
@@ -34,6 +53,17 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       return res.status(404).end('Order not found');
     }
 
+    // If JSON format requested, return raw data
+    if (responseFormat === 'json') {
+      res.setHeader('Content-Type', 'application/json');
+      res.setHeader('Cache-Control', 'no-store');
+      return res.status(200).json({
+        success: true,
+        data: order
+      });
+    }
+
+    // Otherwise, generate HTML receipt
     const fmt = (n: number) => (typeof n === 'number' ? n.toFixed(2) : '0.00');
     const created = new Date(order.created_at).toLocaleString();
 

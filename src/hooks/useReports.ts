@@ -16,6 +16,12 @@ interface OrderData {
   order_type?: string;
   payment_method?: string;
   created_at?: string;
+  tip_cash?: number;
+  tip_cr?: number;
+  coupon_subtract?: number;
+  sc_merch?: number;
+  sc_owner?: number;
+  service_charge?: number;
 }
 
 /**
@@ -42,8 +48,17 @@ export function useDailySales(date: Date) {
       let dineInSales = 0;
       let taxCollected = 0;
       let gratuityTotal = 0;
+      let couponSubtract = 0;
+      let tipCash = 0;
+      let tipCr = 0;
+      let scMerch = 0;
+      let scOwner = 0;
       let creditTotal = 0;
       let cashTotal = 0;
+      let deposited = 0;
+      let cash = 0;
+      let credtTotal = 0;
+      let lunch = 0;
 
       (orders as OrderData[] | null)?.forEach((order) => {
         const subtotal = order.subtotal || 0;
@@ -51,6 +66,11 @@ export function useDailySales(date: Date) {
         const tax = order.tax_amount || order.tax || 0;
         const gratuity = order.gratuity_amount || order.gratuity || 0;
         const total = order.total_amount || order.total || 0;
+        const coupon = order.coupon_subtract || 0;
+        const tipCashAmount = order.tip_cash || 0;
+        const tipCrAmount = order.tip_cr || 0;
+        const scMerchAmount = order.sc_merch || 0;
+        const scOwnerAmount = order.sc_owner || 0;
 
         // Categorize by order type
         if (order.order_type === 'take_out') {
@@ -61,17 +81,30 @@ export function useDailySales(date: Date) {
 
         taxCollected += tax;
         gratuityTotal += gratuity;
+        couponSubtract += coupon;
+        tipCash += tipCashAmount;
+        tipCr += tipCrAmount;
+        scMerch += scMerchAmount;
+        scOwner += scOwnerAmount;
 
         // Categorize by payment method
         if (order.payment_method === 'credit' || order.payment_method === 'debit') {
           creditTotal += total;
+          credtTotal += total;
         } else if (order.payment_method === 'cash') {
           cashTotal += total;
+          deposited += total;
+          cash += total;
         }
       });
 
       const grossSale = togoSales + dineInSales;
-      const netSale = grossSale + taxCollected + gratuityTotal;
+      const netSale = grossSale + taxCollected + gratuityTotal - couponSubtract;
+      const beforeEarned = netSale - couponSubtract;
+      
+      // Calculate earnings (simplified - can be enhanced with business logic)
+      const dailyEarned = netSale + tipCash + tipCr;
+      const weeklyEarned = dailyEarned; // Would need to aggregate by week
 
       return {
         date: dateStr,
@@ -80,7 +113,19 @@ export function useDailySales(date: Date) {
         tax_collected: taxCollected,
         gross_sale: grossSale,
         gratuity_total: gratuityTotal,
+        coupon_subtract: couponSubtract,
         net_sale: netSale,
+        tip_cr: tipCr,
+        tip_cash: tipCash,
+        before_earned: beforeEarned,
+        credt_total: credtTotal,
+        deposited: deposited,
+        cash: cash,
+        sc_merch: scMerch,
+        sc_owner: scOwner,
+        daily_earned: dailyEarned,
+        weekly_earned: weeklyEarned,
+        lunch: lunch,
         credit_total: creditTotal,
         cash_deposited: cashTotal,
       };
@@ -123,7 +168,19 @@ export function useMonthlySales(year: number, month: number) {
           tax_collected: 0,
           gross_sale: 0,
           gratuity_total: 0,
+          coupon_subtract: 0,
           net_sale: 0,
+          tip_cr: 0,
+          tip_cash: 0,
+          before_earned: 0,
+          credt_total: 0,
+          deposited: 0,
+          cash: 0,
+          sc_merch: 0,
+          sc_owner: 0,
+          daily_earned: 0,
+          weekly_earned: 0,
+          lunch: 0,
           credit_total: 0,
           cash_deposited: 0,
         });
@@ -140,6 +197,11 @@ export function useMonthlySales(year: number, month: number) {
           const tax = order.tax_amount || order.tax || 0;
           const gratuity = order.gratuity_amount || order.gratuity || 0;
           const total = order.total_amount || order.total || 0;
+          const coupon = order.coupon_subtract || 0;
+          const tipCashAmount = order.tip_cash || 0;
+          const tipCrAmount = order.tip_cr || 0;
+          const scMerchAmount = order.sc_merch || 0;
+          const scOwnerAmount = order.sc_owner || 0;
 
           if (order.order_type === 'take_out') {
             dailyData.togo_sales += subtotal;
@@ -149,14 +211,24 @@ export function useMonthlySales(year: number, month: number) {
 
           dailyData.tax_collected += tax;
           dailyData.gratuity_total += gratuity;
+          dailyData.coupon_subtract += coupon;
+          dailyData.tip_cash += tipCashAmount;
+          dailyData.tip_cr += tipCrAmount;
+          dailyData.sc_merch += scMerchAmount;
+          dailyData.sc_owner += scOwnerAmount;
           dailyData.gross_sale = dailyData.togo_sales + dailyData.dine_in_sales;
           dailyData.net_sale =
-            dailyData.gross_sale + dailyData.tax_collected + dailyData.gratuity_total;
+            dailyData.gross_sale + dailyData.tax_collected + dailyData.gratuity_total - dailyData.coupon_subtract;
+          dailyData.before_earned = dailyData.net_sale - dailyData.coupon_subtract;
+          dailyData.daily_earned = dailyData.net_sale + dailyData.tip_cash + dailyData.tip_cr;
 
           if (order.payment_method === 'credit' || order.payment_method === 'debit') {
             dailyData.credit_total += total;
+            dailyData.credt_total += total;
           } else if (order.payment_method === 'cash') {
             dailyData.cash_deposited += total;
+            dailyData.deposited += total;
+            dailyData.cash += total;
           }
         }
       });
@@ -171,7 +243,19 @@ export function useMonthlySales(year: number, month: number) {
           tax_collected: acc.tax_collected + day.tax_collected,
           gross_sale: acc.gross_sale + day.gross_sale,
           gratuity_total: acc.gratuity_total + day.gratuity_total,
+          coupon_subtract: acc.coupon_subtract + day.coupon_subtract,
           net_sale: acc.net_sale + day.net_sale,
+          tip_cr: acc.tip_cr + day.tip_cr,
+          tip_cash: acc.tip_cash + day.tip_cash,
+          before_earned: acc.before_earned + day.before_earned,
+          credt_total: acc.credt_total + day.credt_total,
+          deposited: acc.deposited + day.deposited,
+          cash: acc.cash + day.cash,
+          sc_merch: acc.sc_merch + day.sc_merch,
+          sc_owner: acc.sc_owner + day.sc_owner,
+          daily_earned: acc.daily_earned + day.daily_earned,
+          weekly_earned: acc.weekly_earned + day.weekly_earned,
+          lunch: acc.lunch + day.lunch,
           credit_total: acc.credit_total + day.credit_total,
           cash_deposited: acc.cash_deposited + day.cash_deposited,
         }),
@@ -181,7 +265,19 @@ export function useMonthlySales(year: number, month: number) {
           tax_collected: 0,
           gross_sale: 0,
           gratuity_total: 0,
+          coupon_subtract: 0,
           net_sale: 0,
+          tip_cr: 0,
+          tip_cash: 0,
+          before_earned: 0,
+          credt_total: 0,
+          deposited: 0,
+          cash: 0,
+          sc_merch: 0,
+          sc_owner: 0,
+          daily_earned: 0,
+          weekly_earned: 0,
+          lunch: 0,
           credit_total: 0,
           cash_deposited: 0,
         }
@@ -260,7 +356,19 @@ export function useAllTimeSales() {
               tax_collected: 0,
               gross_sale: 0,
               gratuity_total: 0,
+              coupon_subtract: 0,
               net_sale: 0,
+              tip_cr: 0,
+              tip_cash: 0,
+              before_earned: 0,
+              credt_total: 0,
+              deposited: 0,
+              cash: 0,
+              sc_merch: 0,
+              sc_owner: 0,
+              daily_earned: 0,
+              weekly_earned: 0,
+              lunch: 0,
               credit_total: 0,
               cash_deposited: 0,
             });
@@ -272,6 +380,11 @@ export function useAllTimeSales() {
           const tax = order.tax_amount || order.tax || 0;
           const gratuity = order.gratuity_amount || order.gratuity || 0;
           const total = order.total_amount || order.total || 0;
+          const coupon = order.coupon_subtract || 0;
+          const tipCashAmount = order.tip_cash || 0;
+          const tipCrAmount = order.tip_cr || 0;
+          const scMerchAmount = order.sc_merch || 0;
+          const scOwnerAmount = order.sc_owner || 0;
 
           if (order.order_type === 'take_out') {
             dailyData.togo_sales += subtotal;
@@ -281,14 +394,24 @@ export function useAllTimeSales() {
 
           dailyData.tax_collected += tax;
           dailyData.gratuity_total += gratuity;
+          dailyData.coupon_subtract += coupon;
+          dailyData.tip_cash += tipCashAmount;
+          dailyData.tip_cr += tipCrAmount;
+          dailyData.sc_merch += scMerchAmount;
+          dailyData.sc_owner += scOwnerAmount;
           dailyData.gross_sale = dailyData.togo_sales + dailyData.dine_in_sales;
           dailyData.net_sale =
-            dailyData.gross_sale + dailyData.tax_collected + dailyData.gratuity_total;
+            dailyData.gross_sale + dailyData.tax_collected + dailyData.gratuity_total - dailyData.coupon_subtract;
+          dailyData.before_earned = dailyData.net_sale - dailyData.coupon_subtract;
+          dailyData.daily_earned = dailyData.net_sale + dailyData.tip_cash + dailyData.tip_cr;
 
           if (order.payment_method === 'credit' || order.payment_method === 'debit') {
             dailyData.credit_total += total;
+            dailyData.credt_total += total;
           } else if (order.payment_method === 'cash') {
             dailyData.cash_deposited += total;
+            dailyData.deposited += total;
+            dailyData.cash += total;
           }
         });
 
@@ -300,7 +423,19 @@ export function useAllTimeSales() {
             tax_collected: acc.tax_collected + day.tax_collected,
             gross_sale: acc.gross_sale + day.gross_sale,
             gratuity_total: acc.gratuity_total + day.gratuity_total,
+            coupon_subtract: acc.coupon_subtract + day.coupon_subtract,
             net_sale: acc.net_sale + day.net_sale,
+            tip_cr: acc.tip_cr + day.tip_cr,
+            tip_cash: acc.tip_cash + day.tip_cash,
+            before_earned: acc.before_earned + day.before_earned,
+            credt_total: acc.credt_total + day.credt_total,
+            deposited: acc.deposited + day.deposited,
+            cash: acc.cash + day.cash,
+            sc_merch: acc.sc_merch + day.sc_merch,
+            sc_owner: acc.sc_owner + day.sc_owner,
+            daily_earned: acc.daily_earned + day.daily_earned,
+            weekly_earned: acc.weekly_earned + day.weekly_earned,
+            lunch: acc.lunch + day.lunch,
             credit_total: acc.credit_total + day.credit_total,
             cash_deposited: acc.cash_deposited + day.cash_deposited,
           }),
@@ -310,7 +445,19 @@ export function useAllTimeSales() {
             tax_collected: 0,
             gross_sale: 0,
             gratuity_total: 0,
+            coupon_subtract: 0,
             net_sale: 0,
+            tip_cr: 0,
+            tip_cash: 0,
+            before_earned: 0,
+            credt_total: 0,
+            deposited: 0,
+            cash: 0,
+            sc_merch: 0,
+            sc_owner: 0,
+            daily_earned: 0,
+            weekly_earned: 0,
+            lunch: 0,
             credit_total: 0,
             cash_deposited: 0,
           }

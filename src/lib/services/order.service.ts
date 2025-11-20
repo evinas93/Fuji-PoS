@@ -155,7 +155,23 @@ export class OrderService {
     let query = supabase
       .from('orders')
       .select(`
-        *,
+        id,
+        order_number,
+        order_date,
+        order_type,
+        status,
+        table_id,
+        customer_name,
+        customer_phone,
+        server_id,
+        subtotal,
+        tax_amount,
+        gratuity_amount,
+        total_amount,
+        notes,
+        created_at,
+        confirmed_at,
+        completed_at,
         restaurant_tables (
           table_number,
           section,
@@ -197,14 +213,58 @@ export class OrderService {
     const { data, error } = await supabase
       .from('orders')
       .select(`
-        *,
+        id,
+        order_number,
+        order_date,
+        order_type,
+        status,
+        table_id,
+        customer_name,
+        customer_phone,
+        server_id,
+        cashier_id,
+        subtotal,
+        discount_amount,
+        discount_reason,
+        tax_rate,
+        tax_amount,
+        gratuity_rate,
+        gratuity_amount,
+        service_charge_rate,
+        service_charge,
+        total_amount,
+        amount_paid,
+        change_amount,
+        notes,
+        is_void,
+        void_reason,
+        created_at,
+        confirmed_at,
+        completed_at,
+        updated_at,
         restaurant_tables (
           table_number,
           section,
           seats
         ),
         order_items (
-          *,
+          id,
+          order_id,
+          item_id,
+          item_name,
+          quantity,
+          unit_price,
+          modifiers,
+          special_instructions,
+          discount_amount,
+          tax_amount,
+          total_price,
+          status,
+          sent_to_kitchen_at,
+          prepared_at,
+          served_at,
+          created_at,
+          updated_at,
           menu_items:item_id (
             name,
             base_price,
@@ -458,7 +518,7 @@ export class OrderService {
       // Get original order details
       const { data: originalOrder, error: orderError } = await supabase
         .from('orders')
-        .select('*')
+        .select('id, order_type, table_id, customer_name, customer_phone, server_id, status')
         .eq('id', orderId)
         .single();
 
@@ -569,7 +629,20 @@ export class OrderService {
     let query = supabase
       .from('orders')
       .select(`
-        *,
+        id,
+        order_number,
+        order_date,
+        order_type,
+        status,
+        table_id,
+        customer_name,
+        server_id,
+        subtotal,
+        tax_amount,
+        gratuity_amount,
+        total_amount,
+        created_at,
+        completed_at,
         restaurant_tables (
           table_number,
           section

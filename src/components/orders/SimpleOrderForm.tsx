@@ -3,6 +3,7 @@ import React, { useState } from 'react';
 import { useMenu } from '../../hooks/useMenu';
 import type { MenuItem, OrderType, PaymentMethod } from '../../types/database';
 import { supabase } from '../../lib/supabase';
+import ReceiptModal from '../receipts/ReceiptModal';
 
 interface CartItem {
   menuItem: MenuItem;
@@ -24,16 +25,41 @@ export const SimpleOrderForm: React.FC<SimpleOrderFormProps> = ({ onOrderComplet
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>('cash');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
+  const [showReceipt, setShowReceipt] = useState(false);
+  const [completedOrderId, setCompletedOrderId] = useState<string | null>(null);
+
+  // Tip/Gratuity state
+  const [tipType, setTipType] = useState<'percentage' | 'custom'>('percentage');
+  const [tipPercentage, setTipPercentage] = useState<number>(20); // 20% default
+  const [customTipAmount, setCustomTipAmount] = useState<string>('0');
+  const [tipCash, setTipCash] = useState<string>('0');
+  const [tipCr, setTipCr] = useState<string>('0');
+  const [couponSubtract, setCouponSubtract] = useState<string>('0');
+  const [scMerch, setScMerch] = useState<string>('0');
+  const [scOwner, setScOwner] = useState<string>('0');
 
   // Tax and gratuity rates
   const TAX_RATE = 0.08; // 8%
-  const GRATUITY_RATE = 0.2; // 20% for parties of 2+
 
   // Calculate totals
   const subtotal = cart.reduce((sum, item) => sum + item.menuItem.base_price * item.quantity, 0);
   const tax = subtotal * TAX_RATE;
-  const gratuity = (subtotal + tax) * GRATUITY_RATE; // Calculate gratuity on subtotal + tax
-  const total = subtotal + tax + gratuity;
+
+  // Calculate tip/gratuity based on selected type
+  const gratuity = tipType === 'percentage'
+    ? (subtotal + tax) * (tipPercentage / 100)
+    : parseFloat(customTipAmount) || 0;
+
+  const gratuityRate = tipType === 'percentage' ? tipPercentage / 100 : 0;
+  
+  // Parse additional fields
+  const couponAmount = parseFloat(couponSubtract) || 0;
+  const tipCashAmount = parseFloat(tipCash) || 0;
+  const tipCrAmount = parseFloat(tipCr) || 0;
+  const scMerchAmount = parseFloat(scMerch) || 0;
+  const scOwnerAmount = parseFloat(scOwner) || 0;
+
+  const total = subtotal + tax + gratuity - couponAmount;
 
   const addToCart = (menuItem: MenuItem) => {
     const existingItem = cart.find((item) => item.menuItem.id === menuItem.id);
@@ -107,10 +133,15 @@ export const SimpleOrderForm: React.FC<SimpleOrderFormProps> = ({ onOrderComplet
           subtotal: subtotal,
           tax_rate: TAX_RATE,
           tax_amount: tax,
-          gratuity_rate: GRATUITY_RATE,
+          gratuity_rate: gratuityRate,
           gratuity_amount: gratuity,
           total_amount: total,
           amount_paid: total,
+          tip_cash: tipCashAmount,
+          tip_cr: tipCrAmount,
+          coupon_subtract: couponAmount,
+          sc_merch: scMerchAmount,
+          sc_owner: scOwnerAmount,
         })
         .select()
         .single();
@@ -143,11 +174,17 @@ export const SimpleOrderForm: React.FC<SimpleOrderFormProps> = ({ onOrderComplet
 
       if (itemsError) throw itemsError;
 
-      // Success - reset form
+      // Success - show receipt modal
+      setCompletedOrderId(order.id);
+      setShowReceipt(true);
+
+      // Reset form
       setCart([]);
       setOrderType('dine_in');
       setPaymentMethod('cash');
-      alert('Order completed successfully!');
+      setTipType('percentage');
+      setTipPercentage(20);
+      setCustomTipAmount('0');
       onOrderCompleted?.();
     } catch (error) {
       console.error('Error creating order:', error);
@@ -330,23 +367,203 @@ export const SimpleOrderForm: React.FC<SimpleOrderFormProps> = ({ onOrderComplet
           )}
         </div>
 
+        {/* Tip Selection */}
+        <div className="border-t border-gray-200 pt-4 mb-4">
+          <h3 className="font-semibold text-gray-900 mb-3">Tip / Gratuity</h3>
+
+          {/* Tip Type Toggle */}
+          <div className="flex gap-2 mb-3">
+            <button
+              type="button"
+              onClick={() => setTipType('percentage')}
+              className={`flex-1 px-4 py-2 rounded-md font-medium transition-colors ${
+                tipType === 'percentage'
+                  ? 'bg-blue-600 text-white'
+                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+              }`}
+            >
+              Percentage
+            </button>
+            <button
+              type="button"
+              onClick={() => setTipType('custom')}
+              className={`flex-1 px-4 py-2 rounded-md font-medium transition-colors ${
+                tipType === 'custom'
+                  ? 'bg-blue-600 text-white'
+                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+              }`}
+            >
+              Custom Amount
+            </button>
+          </div>
+
+          {/* Percentage Selection */}
+          {tipType === 'percentage' && (
+            <div className="grid grid-cols-4 gap-2">
+              {[0, 15, 18, 20].map((percentage) => (
+                <button
+                  key={percentage}
+                  type="button"
+                  onClick={() => setTipPercentage(percentage)}
+                  className={`px-4 py-2 rounded-md font-medium transition-colors ${
+                    tipPercentage === percentage
+                      ? 'bg-green-600 text-white'
+                      : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                  }`}
+                >
+                  {percentage}%
+                </button>
+              ))}
+            </div>
+          )}
+
+          {/* Custom Amount Input */}
+          {tipType === 'custom' && (
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Enter Tip Amount
+              </label>
+              <div className="relative">
+                <span className="absolute left-3 top-2 text-gray-500">$</span>
+                <input
+                  type="number"
+                  min="0"
+                  step="0.01"
+                  value={customTipAmount}
+                  onChange={(e) => setCustomTipAmount(e.target.value)}
+                  className="w-full pl-7 pr-4 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
+                  placeholder="0.00"
+                />
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* Additional Fields */}
+        <div className="border-t border-gray-200 pt-4 mb-4 space-y-3">
+          <h3 className="font-semibold text-gray-900 mb-3">Additional Information</h3>
+          
+          {/* Tips Breakdown */}
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Cash Tip
+              </label>
+              <div className="relative">
+                <span className="absolute left-3 top-2 text-gray-500">$</span>
+                <input
+                  type="number"
+                  min="0"
+                  step="0.01"
+                  value={tipCash}
+                  onChange={(e) => setTipCash(e.target.value)}
+                  className="w-full pl-7 pr-4 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
+                  placeholder="0.00"
+                />
+              </div>
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Credit Tip
+              </label>
+              <div className="relative">
+                <span className="absolute left-3 top-2 text-gray-500">$</span>
+                <input
+                  type="number"
+                  min="0"
+                  step="0.01"
+                  value={tipCr}
+                  onChange={(e) => setTipCr(e.target.value)}
+                  className="w-full pl-7 pr-4 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
+                  placeholder="0.00"
+                />
+              </div>
+            </div>
+          </div>
+
+          {/* Coupon Discount */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Coupon Discount
+            </label>
+            <div className="relative">
+              <span className="absolute left-3 top-2 text-gray-500">$</span>
+              <input
+                type="number"
+                min="0"
+                step="0.01"
+                value={couponSubtract}
+                onChange={(e) => setCouponSubtract(e.target.value)}
+                className="w-full pl-7 pr-4 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
+                placeholder="0.00"
+              />
+            </div>
+          </div>
+
+          {/* Service Charge Breakdown */}
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Service Charge (Merchant)
+              </label>
+              <div className="relative">
+                <span className="absolute left-3 top-2 text-gray-500">$</span>
+                <input
+                  type="number"
+                  min="0"
+                  step="0.01"
+                  value={scMerch}
+                  onChange={(e) => setScMerch(e.target.value)}
+                  className="w-full pl-7 pr-4 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
+                  placeholder="0.00"
+                />
+              </div>
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Service Charge (Owner)
+              </label>
+              <div className="relative">
+                <span className="absolute left-3 top-2 text-gray-500">$</span>
+                <input
+                  type="number"
+                  min="0"
+                  step="0.01"
+                  value={scOwner}
+                  onChange={(e) => setScOwner(e.target.value)}
+                  className="w-full pl-7 pr-4 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
+                  placeholder="0.00"
+                />
+              </div>
+            </div>
+          </div>
+        </div>
+
         {/* Receipt Totals */}
         <div className="border-t border-gray-200 pt-4 space-y-2">
           <div className="flex justify-between text-gray-700">
             <span>Subtotal:</span>
-            <span className="font-medium">{subtotal.toFixed(2)}</span>
+            <span className="font-medium">${subtotal.toFixed(2)}</span>
           </div>
           <div className="flex justify-between text-gray-700">
             <span>Tax (8%):</span>
-            <span className="font-medium">{tax.toFixed(2)}</span>
+            <span className="font-medium">${tax.toFixed(2)}</span>
           </div>
           <div className="flex justify-between text-gray-700">
-            <span>Gratuity (20%):</span>
-            <span className="font-medium">{gratuity.toFixed(2)}</span>
+            <span>
+              Tip {tipType === 'percentage' ? `(${tipPercentage}%)` : '(Custom)'}:
+            </span>
+            <span className="font-medium">${gratuity.toFixed(2)}</span>
           </div>
+          {couponAmount > 0 && (
+            <div className="flex justify-between text-gray-700 text-red-600">
+              <span>Coupon Discount:</span>
+              <span className="font-medium">-${couponAmount.toFixed(2)}</span>
+            </div>
+          )}
           <div className="flex justify-between text-xl font-bold text-gray-900 pt-2 border-t border-gray-300">
             <span>Total:</span>
-            <span>{total.toFixed(2)}</span>
+            <span>${total.toFixed(2)}</span>
           </div>
         </div>
 
@@ -363,6 +580,15 @@ export const SimpleOrderForm: React.FC<SimpleOrderFormProps> = ({ onOrderComplet
           {isSubmitting ? 'Processing...' : 'Complete Order'}
         </button>
       </div>
+
+      {/* Receipt Modal */}
+      {completedOrderId && (
+        <ReceiptModal
+          isOpen={showReceipt}
+          onClose={() => setShowReceipt(false)}
+          orderId={completedOrderId}
+        />
+      )}
     </div>
   );
 };

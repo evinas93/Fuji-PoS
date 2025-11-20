@@ -139,6 +139,11 @@ export interface Order {
   total_amount: number
   amount_paid: number
   change_amount: number
+  tip_cash: number
+  tip_cr: number
+  coupon_subtract: number
+  sc_merch: number
+  sc_owner: number
   notes: string | null
   is_void: boolean
   void_reason: string | null
@@ -212,6 +217,18 @@ export interface DailySales {
   credit_tips: number
   cash_deposited: number
   credit_deposited: number
+  tip_cr: number
+  tip_cash: number
+  coupon_subtract: number
+  sc_merch: number
+  sc_owner: number
+  deposited: number
+  cash: number
+  credt_total: number
+  before_earned: number
+  daily_earned: number
+  weekly_earned: number
+  lunch: number
   is_closed: boolean
   close_reason: string | null
   created_at: string

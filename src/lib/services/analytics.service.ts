@@ -443,6 +443,7 @@ export class AnalyticsService {
     const { data: salesData, error } = await supabase
       .from('orders')
       .select(`
+        id,
         order_number,
         order_date,
         order_type,
@@ -453,12 +454,6 @@ export class AnalyticsService {
         total_amount,
         users:server_id (full_name),
         restaurant_tables:table_id (table_number),
-        order_items (
-          item_name,
-          quantity,
-          unit_price,
-          total_price
-        ),
         payments (
           payment_method,
           amount
@@ -471,6 +466,20 @@ export class AnalyticsService {
       .order('created_at');
 
     if (error) return { data: null, error };
+
+    // If detailed item information is needed, fetch it separately
+    if (salesData && salesData.length > 0) {
+      const orderIds = salesData.map((order: any) => order.id);
+      const { data: itemsData } = await supabase
+        .from('order_items')
+        .select('order_id, item_name, quantity, unit_price, total_price')
+        .in('order_id', orderIds);
+
+      // Attach items to their orders
+      salesData.forEach((order: any) => {
+        order.order_items = itemsData?.filter((item: any) => item.order_id === order.id) || [];
+      });
+    }
 
     if (format === 'csv') {
       // Convert to CSV format

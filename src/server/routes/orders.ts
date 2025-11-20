@@ -15,6 +15,11 @@ const createOrderSchema = z.object({
   customerPhone: z.string().optional(),
   partySize: z.number().int().min(1).max(20).default(1),
   specialInstructions: z.string().optional(),
+  tipCash: z.number().min(0).default(0),
+  tipCr: z.number().min(0).default(0),
+  couponSubtract: z.number().min(0).default(0),
+  scMerch: z.number().min(0).default(0),
+  scOwner: z.number().min(0).default(0),
   items: z.array(z.object({
     menuItemId: z.string().uuid(),
     quantity: z.number().int().min(1),
@@ -235,6 +240,11 @@ router.post('/', requireServerOrManager, asyncHandler(async (req, res) => {
     special_instructions: validatedData.specialInstructions || null,
     order_date: new Date().toISOString().split('T')[0],
     status: 'pending',
+    tip_cash: validatedData.tipCash || 0,
+    tip_cr: validatedData.tipCr || 0,
+    coupon_subtract: validatedData.couponSubtract || 0,
+    sc_merch: validatedData.scMerch || 0,
+    sc_owner: validatedData.scOwner || 0,
   };
 
   if (validatedData.type === 'dine_in' && validatedData.tableId) {

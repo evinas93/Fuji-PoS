@@ -95,3 +95,7 @@ $$ LANGUAGE plpgsql;
 
 COMMENT ON FUNCTION update_daily_sales() IS 'Updates daily sales summary when orders are completed - handles both original and MVP schemas';
 
+
+
+
+

@@ -108,13 +108,7 @@ async function exportSalesData(supabaseClient: any, dateRange: { start: string; 
       gratuity_amount,
       total_amount,
       users:server_id (full_name),
-      restaurant_tables:table_id (table_number),
-      order_items (
-        item_name,
-        quantity,
-        unit_price,
-        total_price
-      )
+      restaurant_tables:table_id (table_number)
     `)
     .gte('order_date', dateRange.start)
     .lte('order_date', dateRange.end)
